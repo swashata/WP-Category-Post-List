@@ -187,12 +187,15 @@ class WP_CPL_Loader {
 	/**
 	 * Does a few stuff on plugin install
 	 *
-	 * It basically checks if the option is installed
-	 * If it is, then merge with the new one
+	 * It basically checks if the option is installed If it is, then merge with
+	 * the new one
 	 *
 	 * If not, then create it
+	 *
+	 * @param      boolean  $network_wide  Whether network activation
 	 */
-	public function plugin_install() {
-
+	public function plugin_install( $network_wide = false ) {
+		$install = new WP_CPL_Install();
+		$install->install( $network_wide );
 	}
 }
