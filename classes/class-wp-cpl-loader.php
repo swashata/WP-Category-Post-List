@@ -1,5 +1,4 @@
 <?php
-
 /**
  * The primary Loader class for loading all plugin functionality
  *
@@ -7,7 +6,7 @@
  * from scratch
  *
  * @package WP Category Posts List Plugin
- * @subpackage Functionality Classes
+ * @subpackage System Classes
  * @author Swashata Ghosh <swashata@iptms.co>
  */
 
@@ -87,7 +86,70 @@ class WP_CPL_Loader {
 			add_action( 'admin_menu', array( $this, 'admin_menu' ) );
 			// Add some CSS/JS to the widgets and customizer area
 			add_action( 'admin_enqueue_scripts', array( $this, 'admin_menu_style' ) );
+			// A little modification for the plugin actions ( from plugin listing )
+			add_filter( 'plugin_action_links_' . plugin_basename( self::$abs_file ), array( $this, 'plugin_action_links' ), 10, 2 );
 		}
+
+		// Frontend Enqueue
+		add_action( 'wp_enqueue_scripts', array( $this, 'frontend_enqueue' ) );
+
+		// After setup theme to enable post thumbnail
+		// With a delayed priority
+		add_action( 'after_setup_theme', array( $this, 'enable_post_thumbnail' ), 11 );
+
+		// Init the widgets
+		add_action( 'widgets_init', array( $this, 'cpl_widget_init' ) );
+
+		// Init the shortcode
+		add_shortcode( 'wp_cpl_sc', array( $this, 'cpl_shortcode' ) );
+	}
+
+	/*==========================================================================
+	 * Main Functionality Handling
+	 *========================================================================*/
+	/**
+	 * Init the main widget
+	 */
+	public function cpl_widget_init() {
+		// TODO
+	}
+
+	/**
+	 * Shortcode handler
+	 *
+	 * Calls the Shortcode Class and provides the output
+	 */
+	public function cpl_shortcode( $atts = array(), $content = null ) {
+		// TODO
+	}
+
+	/*==========================================================================
+	 * System Hooks
+	 *========================================================================*/
+	/**
+	 * Enables the post thumbnail.
+	 */
+	public function enable_post_thumbnail() {
+		// Check if post thumbnail is already enabled
+		if ( ! current_theme_supports( 'post-thumbnails' ) ) {
+			add_theme_support( 'post-thumbnails' );
+		}
+	}
+
+	/**
+	 * Filters the plugin action for this plugin and adds in the Settings page
+	 * and the Widgets page
+	 *
+	 * @param      array  $links  The array of links
+	 */
+	public function plugin_action_links( $links ) {
+		// Settings
+		$settings = sprintf( '<a href="%1$s">%2$s</a>', add_query_arg( 'page', 'wp_cpl_itg_page', admin_url( 'admin.php' ) ), __( 'Settings', 'wp-cpl' ) );
+		// Widgets
+		$widgets = sprintf( '<a href="%1$s">%2$s</a>', admin_url( 'widgets.php' ), __( 'Widgets', 'wp-cpl' ) );
+
+		// Insert before
+		return array_unshift( $links, $settings, $widgets );
 	}
 
 	/**
@@ -97,6 +159,13 @@ class WP_CPL_Loader {
 		// TODO
 	}
 
+	/*==========================================================================
+	 * Enqueues
+	 *========================================================================*/
+
+	/**
+	 * Admin related enqueues
+	 */
 	public function admin_menu_style() {
 		global $pagenow
 		// Just our expanding JS + CSS for the advanced options
@@ -105,6 +174,12 @@ class WP_CPL_Loader {
 		}
 	}
 
+	/**
+	 * Frontend Enqueue
+	 */
+	public function frontend_enqueue() {
+		// TODO
+	}
 
 	/*==========================================================================
 	 * Activation & Deactivation
