@@ -22,7 +22,7 @@ class WP_CPL_Settings extends WP_CPL_Admin {
 
 		parent::__construct();
 
-		$this->icon = 'list-view';
+		$this->icon = 'th-list';
 	}
 
 	/**
@@ -54,7 +54,7 @@ class WP_CPL_UI_Check extends WP_CPL_Admin {
 
 		parent::__construct();
 
-		$this->icon = 'editor-kitchensink';
+		$this->icon = 'th-list';
 	}
 
 	/**
@@ -83,6 +83,16 @@ class WP_CPL_UI_Check extends WP_CPL_Admin {
 			'has_inner_tab' => false,
 		);
 
+		// jQuery UI Elements
+		$tabs[] = array(
+			'id' => 'wp_cpl_jqui',
+			'label' => __( 'jQuery UI', 'wp-cpl' ),
+			'callback' => array( array( $this, 'jquery_ui' ), array() ),
+			'scroll' => false,
+			'classes' => array(),
+			'has_inner_tab' => false,
+		);
+
 		// Invalid callback
 		$tabs[] = array(
 			'id' => 'wp_cpl_invalid',
@@ -104,6 +114,27 @@ class WP_CPL_UI_Check extends WP_CPL_Admin {
 		$this->ui->msg_okay( __( 'This is an OKAY message', 'wp-cpl' ) );
 		$this->ui->msg_update( __( 'This is an Update message', 'wp-cpl' ) );
 		$this->ui->msg_error( __( 'This is an ERROR message', 'wp-cpl' ) );
+		$this->ui->clear();
+		$this->ui->help( __( 'I am useful', 'wp-cpl' ), __( 'Align Left', 'wp-cpl' ), 'left' );
+		$this->ui->help( __( 'I am useful', 'wp-cpl' ), __( 'Align Right', 'wp-cpl' ), 'right' );
+		$this->ui->help( __( 'I am useful', 'wp-cpl' ), __( 'Align Inline', 'wp-cpl' ), 'inline' );
+	}
+
+	public function jquery_ui() {
+		?>
+<table class="form-table">
+	<tbody>
+		<tr>
+			<th><?php $this->ui->generate_label( 'datepicker', __( 'DatePicker', 'wp-cpl' ) ); ?></th>
+			<td><?php $this->ui->datepicker( 'datepicker', current_time( 'mysql' ), __( 'Enter', 'wp-cpl' ) ); ?></td>
+		</tr>
+		<tr>
+			<th><?php $this->ui->generate_label( 'datetimepicker', __( 'DateTimePicker', 'wp-cpl' ) ); ?></th>
+			<td><?php $this->ui->datetimepicker( 'datetimepicker', current_time( 'mysql' ), __( 'Enter', 'wp-cpl' ) ); ?></td>
+		</tr>
+	</tbody>
+</table>
+		<?php
 	}
 }
 
@@ -286,7 +317,7 @@ abstract class WP_CPL_Admin {
 		?>
 <div class="<?php echo esc_attr( implode( ' ', $ui_class ) ); ?>" id="<?php echo $this->pagehook; ?>_widgets">
 	<div class="icon32">
-		<span class="dashicons dashicons-<?php echo $this->icon; ?>"></span>
+		<span class="ipticm ipt-icomoon-<?php echo $this->icon; ?>"></span>
 	</div>
 	<h2><?php echo $title; ?></h2>
 	<?php $this->ui->clear(); ?>

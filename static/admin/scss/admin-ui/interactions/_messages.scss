@@ -3,7 +3,7 @@
 // ==========================================================================
 .#{$selector} {
 	.ipt_uif_message {
-		padding: 7px 32px 7px 14px;
+		padding: 10px 32px 10px 14px;
 		margin: 0 0 14px 0;
 		border: 1px solid $divider-color;
 		background-color: $preset-bg;
@@ -25,6 +25,9 @@
 			&::before {
 				background-color: $error-color;
 			}
+			.prefix {
+				color: $error-color;
+			}
 		}
 
 		&.update,
@@ -32,12 +35,18 @@
 			&::before {
 				background-color: $update-color;
 			}
+			.prefix {
+				color: $update-color;
+			}
 		}
 
 		&.green,
 		&.okay {
 			&::before {
 				background-color: $success-color;
+			}
+			.prefix {
+				color: $success-color;
 			}
 		}
 

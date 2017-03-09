@@ -65,6 +65,8 @@ class WP_CPL_Admin_UI {
 		wp_enqueue_style( 'wp-cpl-material-font', '//fonts.googleapis.com/css?family=Noto+Sans|Roboto:300,400,400i,700', array(), $version );
 		wp_enqueue_style( 'wp-color-picker' );
 		wp_enqueue_style( 'thickbox' );
+		wp_enqueue_style( 'wp-cpl-jquery-icon', $static_location . 'css/fonts/jquery.iconfont/jquery-ui.icon-font.css', array(), $version );
+		wp_enqueue_style( 'ipt-icomoon-fonts', $static_location . 'css/fonts/icomoon/icomoon.css', array(), $version );
 		wp_enqueue_style( 'wp-cpl-admin-ui', $static_location . 'css/wp-cpl-admin-ui.css', array(), $version );
 
 		// Enqueue all scripts
@@ -131,11 +133,13 @@ class WP_CPL_Admin_UI {
 			'wp-cpl-admin-ui-js' => array(
 				'object_name' => 'initCPLUI',
 				'l10n' => array(
-					'ajax_loader' => __( 'Please Wait', 'wp-cpl' ),
-					'delete_title' => __( 'Confirm Deletion', 'wp-cpl' ),
-					'delete_msg' => __( '<p>Are you sure you want to delete?</p><p>The action can not be undone</p>', 'wp-cpl' ),
-					'got_it' => __( 'Got it', 'wp-cpl' ),
-					'help' => __( 'Help!', 'wp-cpl' ),
+					'L10n' => array(
+						'ajax_loader' => __( 'Please Wait', 'wp-cpl' ),
+						'delete_title' => __( 'Confirm Deletion', 'wp-cpl' ),
+						'delete_msg' => __( '<p>Are you sure you want to delete?</p><p>The action can not be undone</p>', 'wp-cpl' ),
+						'got_it' => __( 'Got it', 'wp-cpl' ),
+						'help' => __( 'Help!', 'wp-cpl' ),
+					),
 				),
 			),
 		);
@@ -227,6 +231,32 @@ class WP_CPL_Admin_UI {
 		<?php
 	}
 
+	/**
+	 * Prints a jQuery UI DatePicker
+	 *
+	 * @param      string  $name         HTML Name
+	 * @param      string  $value        Element Value
+	 * @param      string  $placeholder  Element Placeholder
+	 */
+	public function datepicker( $name, $value, $placeholder = '' ) {
+		echo '<div class="ipt_uif_datepicker">';
+		$this->text( $name, $value, $placeholder );
+		echo '</div>';
+	}
+
+	/**
+	 * Prints a jQuery UI DateTimePicker
+	 *
+	 * @param      string  $name         HTML Name
+	 * @param      string  $value        Element Value
+	 * @param      string  $placeholder  Element Placeholder
+	 */
+	public function datetimepicker( $name, $value, $placeholder = '', $now = false ) {
+		echo '<div class="ipt_uif_datetimepicker">';
+		$this->text( $name, $value, $placeholder );
+		echo '</div>';
+	}
+
 	/*==========================================================================
 	 * WordPress Core UI
 	 *========================================================================*/
@@ -306,6 +336,54 @@ class WP_CPL_Admin_UI {
 		echo $button;
 	}
 
+	/**
+	 * Generate input type text HTML
+	 *
+	 * @param      string  $name         HTML name of the text input
+	 * @param      string  $value        Initial value of the text input
+	 * @param      string  $placeholder  Default placeholder
+	 * @param      string  $type         Input Type text|email|url|number
+	 * @param      string  $size         Size of the text input. By default
+	 *                                   takes 300px width. Pass 'fit' or
+	 *                                   'large-text' to take 100%
+	 * @param      string  $state        readonly or disabled state
+	 * @param      array   $classes      Array of additional classes
+	 * @param      array   $data         HTML 5 data attributes in associative
+	 *                                   array
+	 * @param      array   $attr         Other HTML attributes
+	 * @param      array   $validation   Associative array of all validation
+	 *                                   clauses
+	 */
+	public function text( $name, $value, $placeholder, $type = 'text', $size = '', $state = 'normal', $classes = array(), $data = false, $attr = array(), $validation = false ) {
+		$id = $this->generate_id_from_name( $name );
+		if ( ! is_array( $classes ) ) {
+			$classes = (array) $classes;
+		}
+		$classes[] = 'ipt_uif_text';
+
+		$validation_attr = $this->convert_validation_attr( $validation );
+
+		if ( ! empty( $size ) ) {
+			$classes[] = $size;
+		}
+
+		$data_attr = $this->convert_data_attributes( $data );
+
+		if ( ! is_array( $attr ) ) {
+			$attr = (array) $attr;
+		}
+
+		$attr['type'] = $type;
+
+		$html_attr = $this->convert_html_attributes( $attr );
+
+		$input = '<input class="' . implode( ' ', $classes )  . '"' . ' placeholder="' . esc_attr( $placeholder ) . '"' .
+			' name="' . esc_attr( $name ) . '" id="' . $id . '" value="' . esc_textarea( $value ) . '"' .
+			$data_attr . $this->convert_state_to_attribute( $state ) . $html_attr . $validation_attr . ' />';
+
+		echo $input;
+	}
+
 	/*==========================================================================
 	 * Container Elements
 	 *========================================================================*/
@@ -362,15 +440,7 @@ class WP_CPL_Admin_UI {
 	 * @return     string   The message
 	 */
 	private function print_message( $style, $msg = '', $echo = true ) {
-		$icon = 'dashicons ';
-		if ( 'yellow' == $style || 'update' == $style ) {
-			$icon .= 'dashicons-warning';
-		} else if ( 'red' == $style || 'error' == $style ) {
-			$icon .= 'dashicons-no-alt';
-		} else {
-			$icon .= 'dashicons-yes';
-		}
-		$output = '<div class="ipt_uif_message ' . $style . '"><a href="javascript:;" class="ipt_uif_message_dismiss" title="' . __( 'Dismiss', 'wp-cpl' ) . '">&times;</a><p><i class="inline-dash ' . $icon . '"></i> ' . $msg . '</p></div>';
+		$output = '<div class="ipt_uif_message ' . $style . '"><a href="javascript:;" class="ipt_uif_message_dismiss" title="' . __( 'Dismiss', 'wp-cpl' ) . '">&times;</a><p>' . $msg . '</p></div>';
 		if ( $echo ) {
 			echo $output;
 		}
@@ -439,6 +509,49 @@ class WP_CPL_Admin_UI {
 		<?php
 	}
 
+	/**
+	 * Prints a clickable help icon
+	 *
+	 * Which will show a jQuery UI Dialog with help
+	 *
+	 * @param      string   $msg    The message
+	 * @param      string   $title  The title
+	 * @param      boolean  $align  Float left or right or inline, default
+	 *                              right, float right
+	 */
+	public function help( $msg, $title = '', $align = 'right' ) {
+		$this->help_head( $title, $align );
+		echo wpautop( $msg );
+		$this->help_tail();
+	}
+
+	/**
+	 * Print the head portion of help UI
+	 *
+	 * Must call help_tail afterwards
+	 *
+	 * @param      string   $title  The title
+	 * @param      boolean  $align  Float left or right or inline, default
+	 *                              right, float right
+	 */
+	public function help_head( $title = '', $align = 'right' ) {
+	?>
+<div class="ipt_uif_msg ipt_uif_msg_<?php echo esc_attr( $align ); ?>">
+	<a href="javascript:;" class="ipt_uif_msg_icon" title="<?php echo $title; ?>"><i class="ipt-icomoon-live_help"></i></a>
+	<div class="ipt_uif_msg_body">
+	<?php
+	}
+
+	/**
+	 * Closes the help_head
+	 */
+	public function help_tail() {
+	?>
+	</div>
+</div>
+	<?php
+	}
+
 	/*==========================================================================
 	 * Other CSS Helper stuff
 	 *========================================================================*/
@@ -487,21 +600,103 @@ class WP_CPL_Admin_UI {
 	 *
 	 * This can be echoed directly inside the HTML tag
 	 *
-	 * @param      array  $atts   Associative array of data attributes
+	 * @param      array  $attributes   Associative array of data attributes
 	 *
 	 * @return     string  Readily printable HTML attribute
 	 */
-	public function convert_html_attributes( $atts ) {
-		if ( false == $atts || ! is_array( $atts ) || empty( $atts ) ) {
+	public function convert_html_attributes( $attributes ) {
+		if ( false == $attributes || ! is_array( $attributes ) || empty( $attributes ) ) {
 			return '';
 		}
 
-		$html_atts = '';
-		foreach ( $atts as $attr => $val ) {
-			$html_atts .= ' ' . $attr . '="' . esc_attr( $val ) . '"';
+		$html_attr = '';
+		foreach ( $attributes as $attr => $val ) {
+			$html_attr .= ' ' . $attr . '="' . esc_attr( $val ) . '"';
 		}
 
-		return $html_atts;
+		return $html_attr;
+	}
+
+	/**
+	 * Converts validation filters into
+	 *
+	 * @param      array   $validation  Associative array of validation
+	 *                                  parameters
+	 *
+	 * @return     string  HTML5 validation that can be put into the HTML tag
+	 */
+	public function convert_validation_attr( $validation ) {
+		$html_attr = array();
+		if ( isset( $validation['required'] ) && true == $validation['required'] ) {
+			$html_attr['required'] = 'required';
+		}
+		foreach ( array( 'min', 'max', 'maxlength', 'pattern' ) as $filter ) {
+			if ( isset( $validation[ $filter ] ) && ! empty( $validation[ $filter ] ) ) {
+				$html_attr[ $filter ] = $validation[ $filter ];
+			}
+		}
+		return $this->convert_html_attributes( $html_attr );
+	}
+
+	/**
+	 * Generate Label for an element
+	 *
+	 * @param      string  $name     The name of the element
+	 * @param      string  $text
+	 * @param      string  $id
+	 * @param      array   $classes
+	 */
+	public function generate_label( $name, $text, $id = '', $classes = array() ) {
+		if ( !is_array( $classes ) ) {
+			$classes = (array) $classes;
+		}
+		$classes[] = 'ipt_uif_label';
+		?>
+<label class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" for="<?php echo $this->generate_id_from_name( $name, $id ); ?>"><?php echo $text; ?></label>
+		<?php
+	}
+
+	/**
+	 * Generates HTML ID from given name attribute
+	 *
+	 * Converts all non-supporting characters, like [,] and formulates a string
+	 * that can be used as the ID
+	 *
+	 * @param      string  $name   HTML name
+	 * @param      string  $id     HTML ID which if provided will be returned
+	 *                             with some filters
+	 *
+	 * @return     string  HTML ID that can be put directly
+	 */
+	public function generate_id_from_name( $name, $id = '' ) {
+		if ( '' == trim( $id ) ) {
+			return esc_attr( str_replace( array( '[', ']' ), array( '_', '' ), trim( $name ) ) );
+		} else {
+			return esc_attr( trim( $id ) );
+		}
+	}
+
+	/**
+	 * Convert a valid state of HTML form elements to proper attribute="value"
+	 * pair
+	 *
+	 * @param      string  $state  The state of the HTML item
+	 *
+	 * @return     string
+	 */
+	public function convert_state_to_attribute( $state ) {
+		$output = '';
+		switch ( $state ) {
+			case 'disable' :
+			case 'disabled' :
+				$output = ' disabled="disabled"';
+				break;
+			case 'readonly' :
+			case 'noedit' :
+				$output = ' readonly="readonly"';
+				break;
+		}
+		return $output;
 	}
 
 

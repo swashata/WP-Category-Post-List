@@ -11,9 +11,9 @@
 		box-sizing: border-box;
 	}
 	width: 300px;
-	@media screen and ( min-width: $screen-md-min ) {
-		width: 350px;
-	}
+	// @media screen and ( min-width: $screen-md-min ) {
+	// 	width: 350px;
+	// }
 	padding: 0 10px 10px 10px;
 	font-size: $font-size-base;
 	font-family: $font-family-base;
@@ -85,9 +85,9 @@
 					line-height: $line-height-computed;
 				}
 
-				@media screen and ( min-width: $screen-md-min ) {
-					width: 100px;
-				}
+				// @media screen and ( min-width: $screen-md-min ) {
+				// 	width: 100px;
+				// }
 			}
 		}
 	}
@@ -130,11 +130,11 @@
 			line-height: 32px;
 			border-radius: 50%;
 			will-change: background-color, color;
-			@media screen and ( min-width: $screen-md-min ) {
-				width: 48px;
-				height: 48px;
-				line-height: 48px;
-			}
+			// @media screen and ( min-width: $screen-md-min ) {
+			// 	width: 48px;
+			// 	height: 48px;
+			// 	line-height: 48px;
+			// }
 			@include material__smooth-tran( 200ms, all );
 			&:hover,
 			&:active {
