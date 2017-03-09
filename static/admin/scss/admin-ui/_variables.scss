@@ -28,6 +28,14 @@ $success-color                        : color( 'green', 'base' ) !default;
 $error-color                          : color( 'red', 'base' ) !default;
 $update-color                         : color( 'yellow', 'darken-3' ) !default;
 $interaction-bg                       : color( $text-scheme, 'lighten-5' ) !default;
+$dismiss-bg                           : color( $text-scheme, 'lighten-5' ) !default;
+$dismiss-hover                        : color( $text-scheme, 'lighten-4' ) !default;
+$dismiss-border                       : color( $text-scheme, 'lighten-4' ) !default;
+$dismiss-color                        : color( $text-scheme, 'lighten-1' ) !default;
+
+// == Tab Toolbar
+$tab-toolbar-bg                       : color( $text-scheme, 'lighten-5' ) !default;
+$tab-toolbar-hover                    : color( $text-scheme, 'lighten-3' ) !default;
 
 // == Materialize eForm Textinput & Textarea Components
 $input-height                         : 3em !default;

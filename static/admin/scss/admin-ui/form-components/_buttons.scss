@@ -75,5 +75,26 @@
 		&.right {
 			text-align: right;
 		}
+
+		&.ipt_uif_tab_buttons {
+			margin: 0;
+			background: $tab-toolbar-bg;
+			position: relative;
+			top: -1px;
+			@include material__box-shadow-bottom();
+			&::after {
+				display: block;
+				clear: both;
+				content: "";
+			}
+			.ipt_uif_button {
+				float: left;
+				background-color: transparent;
+
+				&:hover {
+					background-color: $tab-toolbar-hover;
+				}
+			}
+		}
 	}
 }

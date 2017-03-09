@@ -236,8 +236,74 @@ class WP_CPL_Admin_UI {
 	 * Form Elements
 	 *========================================================================*/
 
-	public function buttons( $buttons ) {
+	public function buttons( $buttons, $container = true, $container_id = '', $container_classes = array() ) {
+		// Add out UI container class
+		if ( ! is_array( $container_classes ) ) {
+			$container_classes = (array) $container_classes;
+		}
+		$container_classes[] = 'ipt_uif_button_container';
 
+		// Print the container
+		if ( $container ) {
+			echo '<div' . ( ! empty( $container_id ) ? ' id="' . esc_attr( $container_id ) . '"' : '' ) . ' class="' . esc_attr( implode( ' ', $container_classes ) ) . '">';
+		}
+		foreach ( $buttons as $button ) {
+			call_user_func_array( array( $this, 'button' ), $button );
+			echo "\n";
+		}
+		if ( $container ) {
+			echo '</div>';
+		}
+	}
+
+	/**
+	 * Print a button
+	 *
+	 * @param      string   $text     Button Text
+	 * @param      string   $type     (optional) Button type for 'button' elements,
+	 *                                submit|reset|button etc
+	 * @param      string   $size     (optional) Size of the button large|medium|small
+	 *                                Default medium
+	 * @param      string   $tag      (optional) HTML tag Defaults button could be button|a
+	 * @param      string   $url      (optional) URL in case of anchor button
+	 * @param      boolean  $newtab   (optional) Whether to open the button in the new tab,
+	 *                                works in case of 'a' tag
+	 * @param      array    $classes  (optional) Additional classes
+	 */
+	public function button( $text, $type = '', $size = 'medium', $tag = 'button', $url = '', $newtab = false, $classes = array(), $data = array(), $attr = array() ) {
+		if ( ! is_array( $classes ) ) {
+			$classes = (array) $classes;
+		}
+		// Add UI classes
+		$classes[] = 'ipt_uif_button';
+		// Add size
+		$classes[] = $size;
+
+		// Make the button
+		$button = '<' . $tag . ' class="' . esc_attr( implode( ' ', $classes ) ) . '"';
+		if ( 'a' == $tag ) {
+			if ( ! empty( $url ) ) {
+				$button .= ' href="' . esc_url( $url ) . '"';
+			}
+			if ( $newtab ) {
+				$button .= ' target="_blank" rel="noopener"';
+			}
+		}
+		if ( 'a' != $tag && ! empty( $type ) ) {
+			$button .= ' type="' . esc_attr( $type ) . '"';
+		}
+
+		// Convert our data & html attributes
+		if ( is_array( $data ) && ! empty( $data ) ) {
+			$button .= $this->convert_data_attributes( $data );
+		}
+		if ( is_array( $attr ) && ! empty( $attr ) ) {
+			$button .= $this->convert_html_attributes( $attr );
+		}
+
+		$button .= '>' . $text . '</' . $tag . '>';
+
+		echo $button;
 	}
 
 	/*==========================================================================
@@ -304,7 +370,7 @@ class WP_CPL_Admin_UI {
 		} else {
 			$icon .= 'dashicons-yes';
 		}
-		$output = '<div class="ipt_uif_message ' . $style . '"><p><i class="inline-dash ' . $icon . '"></i> ' . $msg . '</p></div>';
+		$output = '<div class="ipt_uif_message ' . $style . '"><a href="javascript:;" class="ipt_uif_message_dismiss" title="' . __( 'Dismiss', 'wp-cpl' ) . '">&times;</a><p><i class="inline-dash ' . $icon . '"></i> ' . $msg . '</p></div>';
 		if ( $echo ) {
 			echo $output;
 		}
@@ -414,6 +480,28 @@ class WP_CPL_Admin_UI {
 		}
 
 		return $data_attr;
+	}
+
+	/**
+	 * Convert array into HTML attr=value pair
+	 *
+	 * This can be echoed directly inside the HTML tag
+	 *
+	 * @param      array  $atts   Associative array of data attributes
+	 *
+	 * @return     string  Readily printable HTML attribute
+	 */
+	public function convert_html_attributes( $atts ) {
+		if ( false == $atts || ! is_array( $atts ) || empty( $atts ) ) {
+			return '';
+		}
+
+		$html_atts = '';
+		foreach ( $atts as $attr => $val ) {
+			$html_atts .= ' ' . $attr . '="' . esc_attr( $val ) . '"';
+		}
+
+		return $html_atts;
 	}
 
 

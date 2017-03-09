@@ -612,6 +612,17 @@
 
 			// Initialize delete confirmer
 			this.edApplyDeleteConfirm();
+
+			// Initialize Dismiss Message
+			this.edApplyMessageDismiss();
+		},
+
+		// Dismiss Message
+		edApplyMessageDismiss: function() {
+			this.jElement.on( 'click', '.ipt_uif_message_dismiss', function( e ) {
+				e.preventDefault();
+				$( this ).closest( '.ipt_uif_message' ).fadeOut( 'fast' );
+			} );
 		},
 
 		// Help Toggler

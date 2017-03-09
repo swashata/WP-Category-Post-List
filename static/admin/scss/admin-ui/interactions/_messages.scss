@@ -3,7 +3,7 @@
 // ==========================================================================
 .#{$selector} {
 	.ipt_uif_message {
-		padding: 7px 14px;
+		padding: 7px 32px 7px 14px;
 		margin: 0 0 14px 0;
 		border: 1px solid $divider-color;
 		background-color: $preset-bg;
@@ -44,6 +44,28 @@
 		p {
 			margin: 0;
 			padding: 0;
+		}
+
+		.ipt_uif_message_dismiss {
+			position: absolute;
+			right: 8px;
+			top: 50%;
+			margin-top: -9px;
+			height: 18px;
+			width: 18px;
+			line-height: 18px;
+			text-decoration: none;
+			background-color: $dismiss-bg;
+			color: $dismiss-color;
+			padding: 0;
+			text-align: center;
+			border-radius: 100%;
+			border: 1px solid $dismiss-border;
+			@include material__smooth-tran( 300ms, background-color );
+			will-change: background-color;
+			&:hover {
+				background-color: $dismiss-hover;
+			}
 		}
 	}
 }

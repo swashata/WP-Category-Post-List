@@ -96,7 +96,7 @@ class WP_CPL_UI_Check extends WP_CPL_Admin {
 		echo '<div class="ipt_uif_ui_hidden_init">';
 		$this->ui->tabs( $tabs );
 		echo '</div>';
-		$this->index_foot();
+		$this->index_foot( true, true );
 	}
 
 	public function interactions() {
@@ -313,7 +313,7 @@ abstract class WP_CPL_Admin {
 		<?php
 	}
 
-	public function index_foot( $submit = true, $do_action = true, $save = '', $reset = '' ) {
+	public function index_foot( $submit = true, $tab_submit = false, $do_action = true, $save = '', $reset = '' ) {
 		// Calculate the buttons
 		$save = ( empty( $save ) ? __( 'Save Changes', 'wp-cpl' ) : $save );
 		$reset = ( empty( $reset ) ? __( 'Reset', 'wp-cpl' ) : $reset );
@@ -323,12 +323,17 @@ abstract class WP_CPL_Admin {
 			// Reset
 			1 => array( $reset, 'reset', 'medium' ),
 		);
+		$button_container_classes = array( 'ipt_uif_page_buttons' );
+		if ( true == $tab_submit ) {
+			$button_container_classes[] = 'ipt_uif_tab_buttons';
+			$button_container_classes[] = 'ipt_uif_ui_hidden_init';
+		}
 		// Print the page footer
 		?>
 	<?php if ( $this->print_form ) : ?>
 		<?php if ( $submit ) : ?>
 			<?php $this->ui->clear(); ?>
-			<?php $this->ui->buttons( $buttons ); ?>
+			<?php $this->ui->buttons( $buttons, true, $this->pagehook . '_page_buttons', $button_container_classes ); ?>
 		<?php endif; ?>
 		</form>
 		<?php $this->ui->clear(); ?>
