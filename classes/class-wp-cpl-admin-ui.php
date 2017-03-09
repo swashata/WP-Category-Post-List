@@ -257,6 +257,112 @@ class WP_CPL_Admin_UI {
 		echo '</div>';
 	}
 
+	/**
+	 * Generates a simple jQuery UI Progressbar Minumum value is 0 and maximum
+	 * is 100. So always calculate in percentage.
+	 *
+	 * @param      string   $id       The HTML ID
+	 * @param      numeric  $start    The start value
+	 * @param      array    $classes  Additional classes
+	 */
+	public function progressbar( $id = '', $start = 0, $classes = array() ) {
+		if ( ! is_array( $classes ) ) {
+			$classes = (array) $classes;
+		}
+		$classes[] = 'ipt_uif_progress_bar';
+		$id_attr = '';
+		if ( $id != '' ) {
+			$id_attr = ' id="' . esc_attr( $id ) . '"';
+		}
+		?>
+<div class="<?php echo implode( ' ', $classes ); ?>" data-start="<?php echo $start; ?>"<?php echo $id_attr; ?>>
+	<div class="ipt_uif_progress_value"></div>
+</div>
+		<?php
+	}
+
+	/**
+	 * Generate a horizontal slider to select between numerical values
+	 *
+	 * @param      string  $name   HTML name
+	 * @param      string  $value  Initial value of the range
+	 * @param      int     $min    Minimum of the range
+	 * @param      int     $max    Maximum of the range
+	 * @param      int     $step   Slider move step
+	 */
+	public function slider( $name, $value, $min = 0, $max = 100, $step = 1 ) {
+		// Other stuff
+		$min = (float) $min;
+		$max = (float) $max;
+		$step = (float) $step;
+		$value = $value == '' ? $min : (float) $value;
+		if ( $value < $min )
+			$value = $min;
+		if ( $value > $max )
+			$value = $max;
+		?>
+<div class="ipt_uif_slider_box">
+	<input type="number" min="<?php echo $min; ?>" max="<?php echo $max; ?>" step="<?php echo $step; ?>" class="ipt_uif_slider ipt_uif_text" data-min="<?php echo $min; ?>" data-max="<?php echo $max; ?>" data-step="<?php echo $step; ?>" name="<?php echo esc_attr( trim( $name ) ); ?>" id="<?php echo $this->generate_id_from_name( $name ); ?>" value="<?php echo esc_attr( $value ); ?>" />
+</div>
+		<?php
+	}
+
+	/**
+	 * Generate a horizontal slider to select a range between numerical values
+	 *
+	 * @param      mixed(array|string)  $names   $names HTML names in the order
+	 *                                           Min value -> Max value. If
+	 *                                           string is given the [max] and
+	 *                                           [min] is added to make an array
+	 * @param      array                $values  Initial values of the range in
+	 *                                           the same order
+	 * @param      int                  $min     Minimum of the range
+	 * @param      int                  $max     Maximum of the range
+	 * @param      int                  $step    Slider move step
+	 */
+	public function slider_range( $names, $values, $min = 0, $max = 100, $step = 1 ) {
+		if ( ! is_array( $names ) ) {
+			$name = (string) $names;
+			$names = array(
+				$name . '[min]', $name . '[max]',
+			);
+		}
+
+		if ( ! is_array( $values ) ) {
+			$value = (int) $values;
+			$values = array(
+				$value, $value,
+			);
+		}
+
+		// Main stuff
+		$min = (float) $min;
+		$max = (float) $max;
+		$step = (float) $step;
+
+		if ( ! isset( $values[0] ) ) {
+			$values[0] = $values['min'];
+			$values[1] = $values['max'];
+		}
+		$value_min = $values[0] != '' ? $values[0] : $min;
+		$value_max = $values[1] != '' ? $values[1] : $min;
+
+		if ( $value_min < $min )
+			$value_min = $min;
+		if ( $value_min > $max )
+			$value_min = $max;
+		if ( $value_max < $min )
+			$value_max = $min;
+		if ( $value_max > $max )
+			$value_max = $max;
+		?>
+<div class="ipt_uif_slider_box ipt_uif_slider_range_box">
+	<input type="number" min="<?php echo $min; ?>" max="<?php echo $max; ?>" step="<?php echo $step; ?>" class="ipt_uif_slider slider_range ipt_uif_text" data-min="<?php echo $min; ?>" data-max="<?php echo $max; ?>" data-step="<?php echo $step; ?>" name="<?php echo esc_attr( trim( $names[0] ) ); ?>" id="<?php echo $this->generate_id_from_name( $names[0] ); ?>" value="<?php echo esc_attr( $value_min ); ?>" />
+	<input type="number" min="<?php echo $min; ?>" max="<?php echo $max; ?>" step="<?php echo $step; ?>" class="ipt_uif_slider_range_max ipt_uif_text" name="<?php echo esc_attr( trim( $names[1] ) ); ?>" id="<?php echo $this->generate_id_from_name( $names[1] ); ?>" value="<?php echo esc_attr( $value_max ); ?>" />
+</div>
+		<?php
+	}
+
 	/*==========================================================================
 	 * WordPress Core UI
 	 *========================================================================*/
@@ -382,6 +488,22 @@ class WP_CPL_Admin_UI {
 			$data_attr . $this->convert_state_to_attribute( $state ) . $html_attr . $validation_attr . ' />';
 
 		echo $input;
+	}
+
+	/**
+	 * Generate a horizontal slider to select between numerical values
+	 *
+	 * @param      string  $name         HTML name
+	 * @param      string  $value        Initial value of the range
+	 * @param      string  $placeholder  HTML placeholder
+	 * @param      int     $min          Minimum of the range
+	 * @param      int     $max          Maximum of the range
+	 * @param      int     $step         Slider move step
+	 */
+	public function spinner( $name, $value, $placeholder = '', $min = '', $max = '', $step = 1 ) {
+		?>
+<input type="number" placeholder="<?php echo $placeholder; ?>" class="ipt_uif_text code ipt_uif_uispinner" min="<?php echo $min; ?>" max="<?php echo $max; ?>" step="<?php echo $step; ?>" name="<?php echo esc_attr( trim( $name ) ); ?>" id="<?php echo $this->generate_id_from_name( $name ); ?>" value="<?php echo esc_attr( $value ); ?>" />
+		<?php
 	}
 
 	/*==========================================================================

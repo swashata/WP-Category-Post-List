@@ -97,9 +97,6 @@
 			// Check the selectors of every checkbox togglers
 			this.uiCheckboxToggler();
 
-			// Spinners
-			// this.uiApplySpinner(); // we can remove this
-
 			// Sliders
 			this.uiApplySlider();
 
@@ -150,11 +147,6 @@
 					$(_self.data('selector')).prop('checked', true);
 				}
 			});
-		},
-
-		// Spinners
-		uiApplySpinner: function() {
-			this.jElement.find('.ipt_uif_uispinner').spinner();
 		},
 
 		// Sliders

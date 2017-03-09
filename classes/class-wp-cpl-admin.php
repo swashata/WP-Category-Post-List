@@ -132,6 +132,23 @@ class WP_CPL_UI_Check extends WP_CPL_Admin {
 			<th><?php $this->ui->generate_label( 'datetimepicker', __( 'DateTimePicker', 'wp-cpl' ) ); ?></th>
 			<td><?php $this->ui->datetimepicker( 'datetimepicker', current_time( 'mysql' ), __( 'Enter', 'wp-cpl' ) ); ?></td>
 		</tr>
+		<tr>
+			<td colspan="2">
+				<?php $this->ui->progressbar( '', 50 ); ?>
+			</td>
+		</tr>
+		<tr>
+			<th><?php $this->ui->generate_label( 'slider', __( 'Slider', 'wp-cpl' ) ); ?></th>
+			<td><?php $this->ui->slider( 'slider', 50, -100, 100, 10 ); ?></td>
+		</tr>
+		<tr>
+			<th><?php $this->ui->generate_label( 'range', __( 'Range', 'wp-cpl' ) ); ?></th>
+			<td><?php $this->ui->slider_range( 'range', array( 20, 80 ), -100, 100, 10 ); ?></td>
+		</tr>
+		<tr>
+			<th><?php $this->ui->generate_label( 'spinner', __( 'Spinner', 'wp-cpl' ) ); ?></th>
+			<td><?php $this->ui->spinner( 'spinner', 50, __( 'Number', 'wp-cpl' ), -100, 100, 10 ); ?></td>
+		</tr>
 	</tbody>
 </table>
 		<?php
