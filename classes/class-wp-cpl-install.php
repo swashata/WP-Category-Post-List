@@ -57,7 +57,7 @@ class WP_CPL_Install {
 				$current_op['version'] = '1.0.0';
 			}
 			// If upgrading from legecy
-			if ( version_compare( $current_op['version'], '3.0.0', '<' ) ) {
+			if ( version_compare( $current_op['version'], '2.5.0', '<' ) ) {
 				// We be good samaritan and migrate
 				$new_op['enqueue_css'] = $current_op['wp_cpl_use_def_css'];
 				$new_op['tile_thumb_widgets'] = is_array( $current_op['wp_cpl_thumb_size'] ) ? $current_op['wp_cpl_thumb_size'] : array( $current_op['wp_cpl_thumb_size'], $current_op['wp_cpl_thumb_size'] );
@@ -67,9 +67,10 @@ class WP_CPL_Install {
 				if ( WP_CPL_Loader::$version != $current_op['version'] ) {
 					// Version-wise special upgade
 					switch ( $current_op['version'] ) {
-						case '3.0.0':
+						case '2.5.0':
 							// Nothing for now
 							// Just upgrading from the legecy
+							// 2.5.0 is kept for internal testing
 							break;
 					}
 				}
@@ -82,6 +83,9 @@ class WP_CPL_Install {
 			$new_op['version'] = WP_CPL_Loader::$version;
 			// Update
 			update_option( 'wp-cpl-itg-op', $new_op );
+
+			global $wp_cpl_settings;
+			$wp_cpl_settings = get_option( 'wp-cpl-itg-op' );
 		}
 	}
 }

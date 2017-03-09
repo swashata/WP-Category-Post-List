@@ -35,6 +35,13 @@ class WP_CPL_Loader {
 	private static $instance = null;
 
 	/**
+	 * Admin classes to instantiate
+	 *
+	 * @var        array
+	 */
+	private static $init_classes = array();
+
+	/**
 	 * Get the singleton instance
 	 *
 	 * @param      string         $plugin_file  The plugin file
@@ -66,6 +73,9 @@ class WP_CPL_Loader {
 
 		// Set version
 		self::$version = $version;
+
+		// Set Admin classes
+		self::$init_classes = array( 'WP_CPL_Settings', 'WP_CPL_UI_Check' );
 	}
 
 	/**
@@ -80,10 +90,15 @@ class WP_CPL_Loader {
 		// Load text domain for translation
 		load_plugin_textdomain( 'wp-cpl', false, dirname( plugin_basename( self::$abs_file ) ) . '/translations' );
 
+		// Auto upgrade
+		add_action( 'plugins_loaded', array( $this, 'auto_upgrade' ) );
+
 		// Do some admin related stuff
 		if ( is_admin() ) {
+			// Extendible WP CPL Settings
+			add_action( 'plugins_loaded', array( $this, 'init_admin_menus' ), 20 );
 			// Add our glorified settings page
-			add_action( 'admin_menu', array( $this, 'admin_menu' ) );
+			add_action( 'admin_init', array( $this, 'gen_admin_menu' ), 20 );
 			// Add some CSS/JS to the widgets and customizer area
 			add_action( 'admin_enqueue_scripts', array( $this, 'admin_menu_style' ) );
 			// A little modification for the plugin actions ( from plugin listing )
@@ -149,14 +164,35 @@ class WP_CPL_Loader {
 		$widgets = sprintf( '<a href="%1$s">%2$s</a>', admin_url( 'widgets.php' ), __( 'Widgets', 'wp-cpl' ) );
 
 		// Insert before
-		return array_unshift( $links, $settings, $widgets );
+		array_unshift( $links, $settings, $widgets );
+		return $links;
+	}
+
+	public function init_admin_menus() {
+		self::$init_classes = apply_filters( 'wp_cpl_admin_menus', self::$init_classes );
+		foreach ( (array) self::$init_classes as $class ) {
+			if ( class_exists( $class ) ) {
+				global ${'admin_menu' . $class};
+				${'admin_menu' . $class} = new $class();
+			}
+		}
 	}
 
 	/**
 	 * Hooks to the admin_menu to create WP CPL Settings page
 	 */
-	public function admin_menu() {
-		// TODO
+	public function gen_admin_menu() {
+		$admin_menus = array();
+		foreach ( (array) self::$init_classes as $class ) {
+			if ( class_exists( $class ) ) {
+				global ${'admin_menu' . $class};
+				$admin_menus[] = ${'admin_menu' . $class}->get_pagehook();
+			}
+		}
+
+		foreach ( $admin_menus as $menu ) {
+			add_action( 'admin_print_styles-' . $menu, array( $this, 'admin_enqueue_script_style' ) );
+		}
 	}
 
 	/*==========================================================================
@@ -167,11 +203,23 @@ class WP_CPL_Loader {
 	 * Admin related enqueues
 	 */
 	public function admin_menu_style() {
-		global $pagenow
+		global $pagenow;
 		// Just our expanding JS + CSS for the advanced options
 		if ( 'widgets.php' == $pagenow || 'customize.php' == $pagenow ) {
 			// TODO
 		}
+	}
+
+	/**
+	 * Enqueues on pages handled by WP CPL
+	 */
+	public function admin_enqueue_script_style() {
+		// All files needed by UI
+		$ui = WP_CPL_Admin_UI::get_instance();
+		$ui->enqueue( apply_filters( 'wp_cpl_admin_ignore_js', array() ) );
+
+		// Other files needed by the main plugin
+		// Nothing Yet!
 	}
 
 	/**
@@ -197,5 +245,13 @@ class WP_CPL_Loader {
 	public function plugin_install( $network_wide = false ) {
 		$install = new WP_CPL_Install();
 		$install->install( $network_wide );
+	}
+
+	public function auto_upgrade() {
+		global $wp_cpl_settings;
+		if ( ! isset( $wp_cpl_settings['version'] ) || version_compare( $wp_cpl_settings['version'], self::$version, '<' ) ) {
+			$install = new WP_CPL_Install();
+			$install->checkop();
+		}
 	}
 }
