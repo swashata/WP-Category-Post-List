@@ -4,19 +4,12 @@
 .#{$selector} {
 	.ipt_uif_shadow {
 		@include material__box-shadow-subtle();
-
-		&.lifted_corner,
-		&.glowy {
-			/* NADA*/
-		}
 	}
 
 	.ui-widget,
 	.ui-widget-content,
 	.ipt_uif_shadow {
-		.ipt_uif_shadow,
-		.lifted_corner,
-		.glowy {
+		.ipt_uif_shadow {
 			box-shadow: none;
 			border: 1px solid $divider-color;
 			margin-bottom: -1px;

@@ -125,6 +125,9 @@
 			// Collapsebox
 			this.uiApplyCollapsible();
 
+			// Select
+			this.uiApplySelectMenu();
+
 			// Tabs
 			this.uiApplyTabs();
 
@@ -135,6 +138,15 @@
 		uiApplyUIInits: function() {
 			this.jElement.find( '.ipt_uif_ui_init_loader' ).hide();
 			this.jElement.find( '.ipt_uif_ui_hidden_init' ).css( 'visibility', 'visible' ).fadeIn( 'fast' );
+		},
+
+		// UI Select Menu
+		uiApplySelectMenu: function() {
+			if ( typeof( $.fn.select2 ) == 'undefined' ) {
+				return;
+			}
+			var that = this;
+			$( 'select.ipt_uif_select' ).select2();
 		},
 
 		// Checkbox Toggler

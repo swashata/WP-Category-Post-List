@@ -91,7 +91,8 @@ class WP_CPL_Admin_UI {
 			'wp-color-picker'         => array(),
 			'dashicons'               => array(),
 			'jquery-timepicker-addon' => array( $static_location . 'js/jquery-ui-timepicker-addon.js', array( 'jquery', 'jquery-ui-datepicker' ) ),
-			'wp-cpl-admin-ui-js'      => array( $static_location . 'js/jquery.wp-cpl-admin-ui.min.js', array(  ) ),
+			'select2'                 => array( $static_location . 'js/select2.min.js', array( 'jquery' ) ),
+			'wp-cpl-admin-ui-js'      => array( $static_location . 'js/jquery.wp-cpl-admin-ui.min.js', array() ),
 		);
 
 		// Localization
@@ -143,6 +144,8 @@ class WP_CPL_Admin_UI {
 				),
 			),
 		);
+		// WooCommerce Compatibility
+		wp_deregister_script( 'select2' );
 		foreach ( $scripts as $script_id => $script_prop ) {
 			if ( ! in_array( $script_id, $ignore_js ) ) {
 				if ( empty( $script_prop ) ) {
@@ -366,12 +369,355 @@ class WP_CPL_Admin_UI {
 	/*==========================================================================
 	 * WordPress Core UI
 	 *========================================================================*/
+	/**
+	 * Link a textarea with a wordpress editor
+	 *
+	 * Things are done through JavaScript
+	 *
+	 * @param      string   $name         HTML Name
+	 * @param      string   $value        The value
+	 * @param      string   $placeholder  The placeholder
+	 * @param      string   $size         The size
+	 * @param      string   $state        The state
+	 * @param      array    $classes      The classes
+	 * @param      boolean  $data         The data
+	 * @param      boolean  $validation   The validation
+	 */
+	public function textarea_linked_wp_editor( $name, $value, $placeholder, $size = 'regular', $state = 'normal', $classes = array(), $data = false, $validation = false ) {
+		if ( ! is_array( $classes ) ) {
+			$classes = (array) $classes;
+		}
+		$classes[] = 'wp_editor';
+		$this->textarea( $name, $value, $placeholder, 4, $size, $state, $classes, $data, array(), $validation );
+	}
 
+	/**
+	 * Prints WP Editor with some additional settings
+	 *
+	 * @param      string  $name                 HTML Name
+	 * @param      string  $value                Value
+	 * @param      array   $additional_settings  The additional settings
+	 */
+	public function wp_editor( $name, $value, $additional_settings = array() ) {
+		if ( ! is_array( $additional_settings ) ) {
+			$additional_settings = (array) $additional_settings;
+		}
+		$additional_settings['textarea_name'] = $name;
+		$editor_id = $this->generate_id_from_name( $name );
+		wp_editor( $value, $editor_id, $additional_settings );
+	}
 
 	/*==========================================================================
 	 * Form Elements
 	 *========================================================================*/
+	/**
+	 * Prints a group of radio items for a single HTML name
+	 *
+	 * @param      string  $name         The HTML name of the radio group
+	 * @param      array   $items        Associative array of all the radio
+	 *                                   items. array( 'value' => '', 'label' =>
+	 *                                   '', 'disabled' => true|false,//optional
+	 *                                   'data' => array('key' =>
+	 *                                   'value'[,...]), //optional HTML 5 data
+	 *                                   attributes inside an associative array
+	 *                                   )
+	 * @param      string  $checked      The value of the checked item
+	 * @param      bool    $conditional  Whether the group represents
+	 *                                   conditional questions. This will wrap
+	 *                                   it inside a conditional div which will
+	 *                                   be fired using jQuery. It does not
+	 *                                   populate or create anything inside the
+	 *                                   conditional div. The id of the
+	 *                                   conditional divs should be given inside
+	 *                                   the data value of the items in the form
+	 *                                   condID => 'ID_OF_DIV'
+	 * @param      string  $col          The column layout. Could be inline, 1,
+	 *                                   2, 3, 4
+	 */
+	public function radios( $name, $items, $checked, $conditional = false, $col = 'inline' ) {
+		$this->_radio_checkbox_helper( $name, $items, $checked, $conditional, $col );
+	}
 
+	/**
+	 * Prints a group of checkbox items for a single HTML name
+	 *
+	 * @param      string  $name         The HTML name of the checkbox group
+	 * @param      array   $items        Associative array of all the checkbox
+	 *                                   items. array( 'value' => '', 'label' =>
+	 *                                   '', 'disabled' => true|false,//optional
+	 *                                   'data' => array('key' =>
+	 *                                   'value'[,...]), //optional HTML 5 data
+	 *                                   attributes inside an associative array
+	 *                                   )
+	 * @param      string  $checked      The value of the checked item
+	 * @param      bool    $conditional  Whether the group represents
+	 *                                   conditional questions. This will wrap
+	 *                                   it inside a conditional div which will
+	 *                                   be fired using jQuery. It does not
+	 *                                   populate or create anything inside the
+	 *                                   conditional div. The id of the
+	 *                                   conditional divs should be given inside
+	 *                                   the data value of the items in the form
+	 *                                   condID => 'ID_OF_DIV'
+	 * @param      string  $col          The column layout. Could be inline, 1,
+	 *                                   2, 3, 4
+	 */
+	public function checkboxes( $name, $items, $checked, $conditional = false, $col = 'inline' ) {
+		$this->_radio_checkbox_helper( $name, $items, $checked, $conditional, $col, 'checkbox' );
+	}
+
+	public function select( $name, $items, $selected, $multiple = false, $conditional = false, $classes = array(), $print_select = true ) {
+		if ( ! is_array( $items ) || empty( $items ) ) {
+			return;
+		}
+
+		if ( ! is_array( $classes ) ) {
+			$classes = (array) $classes;
+		}
+
+		$classes[] = 'ipt_uif_select';
+		$items = $this->standardize_items( $items );
+		$id = $this->generate_id_from_name( $name );
+
+		if ( $conditional ) {
+			echo '<div class="ipt_uif_conditional_select">';
+		}
+
+		$select = '';
+		if ( $print_select ) {
+			$select .= '<select class="' . implode( ' ', $classes ) . '" name="' . esc_attr( $name ) . '" id="' . $id . '" '. ( true === $multiple ? ' multiple="multiple"' : '' ) . '>';
+		}
+
+		foreach ( $items as $item ) {
+			$select .= '<option value="' . $item['value'] . '"' . ' ' . $this->convert_data_attributes( $item['data'] ) .
+				$this->selected( $selected, $item['value'] ) . '>' . $item['label'] . '</option>';
+		}
+
+		if ( $print_select ) {
+			$select .= '</select>';
+		}
+
+		echo $select;
+
+		if ( $conditional ) {
+			echo '</div>';
+		}
+	}
+
+	/**
+	 * Prints a single checkbox element
+	 *
+	 * @param      string   $name         HTML Name
+	 * @param      string   $value        Item value
+	 * @param      string   $label        Item label
+	 * @param      boolean  $is_checked   Indicates if checked
+	 * @param      boolean  $conditional  Whether conditional logic should be applied on it
+	 * @param      string   $condid       data condId
+	 */
+	public function checkbox( $name, $value, $label, $is_checked, $conditional = false, $condid = '' ) {
+		$item = array(
+			'value' => $value,
+			'label' => $label,
+		);
+		$checked = array();
+		if ( true == $is_checked ) {
+			$checked[] = $value;
+		}
+		if ( true == $conditional ) {
+			$item['data'] = array(
+				'condid' => $condid,
+			);
+		}
+		$this->checkboxes( $name, array( $item ), $checked, $conditional );
+	}
+
+	/**
+	 * Print a Toggle HTML item
+	 *
+	 * @param      string  $name         The HTML name of the toggle
+	 * @param      string  $on           ON text
+	 * @param      string  $off          OFF text
+	 * @param      bool    $checked      TRUE if checked
+	 * @param      string  $value        The HTML value of the toggle checkbox
+	 *                                   (Optional, default to '1')
+	 * @param      bool    $conditional  Whether the group represents
+	 *                                   conditional questions. This will wrap
+	 *                                   it inside a conditional div which will
+	 *                                   be fired using jQuery. It does not
+	 *                                   populate or create anything inside the
+	 *                                   conditional div. The id of the
+	 *                                   conditional divs should be given inside
+	 *                                   the data value of the items in the form
+	 *                                   condID => 'ID_OF_DIV'
+	 * @param      array   $data         HTML 5 data attributes in the form
+	 *                                   array('key' => 'value'[,...])
+	 */
+	public function toggle( $name, $on, $off, $checked, $value = '1', $conditional = false, $data = array() ) {
+		if ( $conditional == true ) {
+			echo '<div class="ipt_uif_conditional_input">';
+		}
+
+		$id = $this->generate_id_from_name( $name );
+?>
+<div class="switch">
+	<label for="<?php echo $id; ?>" data-on="<?php echo $on; ?>" data-off="<?php echo $off; ?>">
+		<?php echo $off; ?>
+		<input<?php echo $this->convert_data_attributes( $data ); ?> type="checkbox"<?php if ( $checked ) : ?> checked="checked"<?php endif; ?> class="ipt_uif_switch" name="<?php echo $name; ?>" id="<?php echo $id; ?>" value="<?php echo esc_attr( $value ); ?>" />
+		<span class="lever"></span>
+		<?php echo $on; ?>
+	</label>
+</div>
+<?php
+		if ( $conditional == true ) {
+			echo '</div>';
+		}
+	}
+
+	/**
+	 * Generate input type text HTML
+	 *
+	 * @param      string  $name         HTML name of the text input
+	 * @param      string  $value        Initial value of the text input
+	 * @param      string  $placeholder  Default placeholder
+	 * @param      string  $type         Input Type text|email|url|number
+	 * @param      string  $size         Size of the text input. By default
+	 *                                   takes 300px width. Pass 'fit' or
+	 *                                   'large-text' to take 100%
+	 * @param      string  $state        readonly or disabled state
+	 * @param      array   $classes      Array of additional classes
+	 * @param      array   $data         HTML 5 data attributes in associative
+	 *                                   array
+	 * @param      array   $attr         Other HTML attributes
+	 * @param      array   $validation   Associative array of all validation
+	 *                                   clauses
+	 */
+	public function text( $name, $value, $placeholder, $type = 'text', $size = '', $state = 'normal', $classes = array(), $data = false, $attr = array(), $validation = false ) {
+		$id = $this->generate_id_from_name( $name );
+		if ( ! is_array( $classes ) ) {
+			$classes = (array) $classes;
+		}
+		$classes[] = 'ipt_uif_text';
+
+		$validation_attr = $this->convert_validation_attr( $validation );
+
+		if ( ! empty( $size ) ) {
+			$classes[] = $size;
+		}
+
+		$data_attr = $this->convert_data_attributes( $data );
+
+		if ( ! is_array( $attr ) ) {
+			$attr = (array) $attr;
+		}
+
+		$attr['type'] = $type;
+
+		$html_attr = $this->convert_html_attributes( $attr );
+
+		$input = '<input class="' . implode( ' ', $classes ) . '"' . ' placeholder="' . esc_attr( $placeholder ) . '"' .
+			' name="' . esc_attr( $name ) . '" id="' . $id . '" value="' . esc_textarea( $value ) . '"' .
+			$data_attr . $this->convert_state_to_attribute( $state ) . $html_attr . $validation_attr . ' />';
+
+		echo $input;
+	}
+
+	/**
+	 * Prints a password element
+	 *
+	 * @param      string  $name         HTML name of the text input
+	 * @param      string  $value        Initial value of the text input
+	 * @param      string  $placeholder  Default placeholder
+	 * @param      string  $size         Size of the text input. By default
+	 *                                   takes 300px width. Pass 'fit' or
+	 *                                   'large-text' to take 100%
+	 * @param      string  $state        readonly or disabled state
+	 * @param      array   $classes      Array of additional classes
+	 * @param      array   $data         HTML 5 data attributes in associative
+	 *                                   array
+	 * @param      array   $attr         Other HTML attributes
+	 * @param      array   $validation   Associative array of all validation
+	 *                                   clauses
+	 */
+	public function password( $name, $value, $placeholder, $size = 'fit', $state = 'normal', $classes = array(), $data = false, $attr = array(), $validation = false ) {
+		if ( ! is_array( $classes ) ) {
+			$classes = (array) $classes;
+		}
+		$classes[] = 'ipt_uif_password';
+
+		$this->text( $name, $value, $placeholder, 'password', $size, $state, $classes, $data, $attr, $validation );
+	}
+
+	/**
+	 * Generate a horizontal slider to select between numerical values
+	 *
+	 * @param      string  $name         HTML name
+	 * @param      string  $value        Initial value of the range
+	 * @param      string  $placeholder  HTML placeholder
+	 * @param      int     $min          Minimum of the range
+	 * @param      int     $max          Maximum of the range
+	 * @param      int     $step         Slider move step
+	 */
+	public function spinner( $name, $value, $placeholder = '', $min = '', $max = '', $step = 1 ) {
+		?>
+<input type="number" placeholder="<?php echo $placeholder; ?>" class="ipt_uif_text code ipt_uif_uispinner" min="<?php echo $min; ?>" max="<?php echo $max; ?>" step="<?php echo $step; ?>" name="<?php echo esc_attr( trim( $name ) ); ?>" id="<?php echo $this->generate_id_from_name( $name ); ?>" value="<?php echo esc_attr( $value ); ?>" />
+		<?php
+	}
+
+	/**
+	 * Generate textarea HTML
+	 *
+	 * @param      string   $name         HTML name of the text input
+	 * @param      string   $value        Initial value of the text input
+	 * @param      string   $placeholder  Default placeholder
+	 * @param      integer  $rows         The rows
+	 * @param      string   $size         Size of the text input
+	 * @param      string   $state        readonly or disabled state
+	 * @param      array    $classes      Array of additional classes
+	 * @param      array    $data         HTML 5 data attributes in associative
+	 *                                    array
+	 * @param      array    $attr         The attribute
+	 * @param      array    $validation   Associative array of all validation
+	 *                                    clauses
+	 */
+	public function textarea( $name, $value, $placeholder, $rows = 4, $size = 'fit', $state = 'normal', $classes = array(), $data = false, $attr = array(), $validation = false ) {
+		$id = $this->generate_id_from_name( $name );
+		if ( ! is_array( $classes ) ) {
+			$classes = (array) $classes;
+		}
+		$classes[] = 'ipt_uif_textarea';
+
+		$validation_attr = $this->convert_validation_attr( $validation );
+
+		if ( ! empty( $size ) ) {
+			$classes[] = $size;
+		}
+
+		$data_attr = $this->convert_data_attributes( $data );
+
+		if ( ! is_array( $attr ) ) {
+			$attr = (array) $attr;
+		}
+		$html_attr = $this->convert_html_attributes( $attr );
+
+		$textarea = '<textarea rows="' . esc_attr( $rows ) . '" class="' . implode( ' ', $classes ) .
+			' placeholder="' . esc_attr( $placeholder ) . ' name="' . esc_attr( $name ) . '" id="' . $id . '"' .
+			$data_attr . $html_attr . $this->convert_state_to_attribute( $state ) . '>' .
+			esc_textarea( $value ) .
+			'</textarea>';
+		echo $textarea;
+	}
+
+	/**
+	 * Prints Group of buttons
+	 *
+	 * @param      array    $buttons            The associative array of
+	 *                                          buttons. Every array is called
+	 *                                          upon $this->button
+	 * @param      boolean  $container          Whether to group inside a
+	 *                                          container div
+	 * @param      string   $container_id       The container identifier
+	 * @param      array    $container_classes  The container classes
+	 */
 	public function buttons( $buttons, $container = true, $container_id = '', $container_classes = array() ) {
 		// Add out UI container class
 		if ( ! is_array( $container_classes ) ) {
@@ -443,72 +789,127 @@ class WP_CPL_Admin_UI {
 	}
 
 	/**
-	 * Generate input type text HTML
+	 * Helper function for printing checkbox and radio elements
 	 *
-	 * @param      string  $name         HTML name of the text input
-	 * @param      string  $value        Initial value of the text input
-	 * @param      string  $placeholder  Default placeholder
-	 * @param      string  $type         Input Type text|email|url|number
-	 * @param      string  $size         Size of the text input. By default
-	 *                                   takes 300px width. Pass 'fit' or
-	 *                                   'large-text' to take 100%
-	 * @param      string  $state        readonly or disabled state
-	 * @param      array   $classes      Array of additional classes
-	 * @param      array   $data         HTML 5 data attributes in associative
-	 *                                   array
-	 * @param      array   $attr         Other HTML attributes
-	 * @param      array   $validation   Associative array of all validation
-	 *                                   clauses
-	 */
-	public function text( $name, $value, $placeholder, $type = 'text', $size = '', $state = 'normal', $classes = array(), $data = false, $attr = array(), $validation = false ) {
-		$id = $this->generate_id_from_name( $name );
-		if ( ! is_array( $classes ) ) {
-			$classes = (array) $classes;
-		}
-		$classes[] = 'ipt_uif_text';
-
-		$validation_attr = $this->convert_validation_attr( $validation );
-
-		if ( ! empty( $size ) ) {
-			$classes[] = $size;
-		}
-
-		$data_attr = $this->convert_data_attributes( $data );
-
-		if ( ! is_array( $attr ) ) {
-			$attr = (array) $attr;
-		}
-
-		$attr['type'] = $type;
-
-		$html_attr = $this->convert_html_attributes( $attr );
-
-		$input = '<input class="' . implode( ' ', $classes )  . '"' . ' placeholder="' . esc_attr( $placeholder ) . '"' .
-			' name="' . esc_attr( $name ) . '" id="' . $id . '" value="' . esc_textarea( $value ) . '"' .
-			$data_attr . $this->convert_state_to_attribute( $state ) . $html_attr . $validation_attr . ' />';
-
-		echo $input;
-	}
-
-	/**
-	 * Generate a horizontal slider to select between numerical values
+	 * Checks for types and processes data accordingly
 	 *
-	 * @param      string  $name         HTML name
-	 * @param      string  $value        Initial value of the range
-	 * @param      string  $placeholder  HTML placeholder
-	 * @param      int     $min          Minimum of the range
-	 * @param      int     $max          Maximum of the range
-	 * @param      int     $step         Slider move step
+	 * @param      string               $name         HTML Name
+	 * @param      array                $items        Items
+	 * @param      mixed(array|string)  $checked      The value(s) of checked
+	 *                                                elements
+	 * @param      boolean              $conditional  Whether conditional
+	 *                                                element
+	 * @param      string               $col          Number of columns in
+	 *                                                options
+	 * @param      string               $type         The type - radio|checkbox
 	 */
-	public function spinner( $name, $value, $placeholder = '', $min = '', $max = '', $step = 1 ) {
-		?>
-<input type="number" placeholder="<?php echo $placeholder; ?>" class="ipt_uif_text code ipt_uif_uispinner" min="<?php echo $min; ?>" max="<?php echo $max; ?>" step="<?php echo $step; ?>" name="<?php echo esc_attr( trim( $name ) ); ?>" id="<?php echo $this->generate_id_from_name( $name ); ?>" value="<?php echo esc_attr( $value ); ?>" />
-		<?php
+	private function _radio_checkbox_helper( $name, $items, $checked, $conditional = false, $col = 'inline', $type = 'radio' ) {
+		if ( ! is_array( $items ) || empty( $items ) ) {
+			return;
+		}
+
+		if ( 'radio' == $type ) {
+			if ( ! is_string( $checked ) ) {
+				$checked = (string) $checked;
+			}
+		} elseif ( 'checkbox' == $type ) {
+			if ( ! is_array( $checked ) ) {
+				$checked = (array) $checked;
+			}
+		}
+
+		$id_prefix = $this->generate_id_from_name( $name );
+		$items = $this->standardize_items( $items );
+
+		if ( true == $conditional ) {
+			echo '<div class="ipt_uif_conditional_input">';
+		}
+		echo '<div class="ipt_uif_label_group col-' . $col . '">';
+		foreach ( (array) $items as $item ) {
+			$data_attr = $this->convert_data_attributes( $item['data'] );
+			$html_attr = $this->convert_html_attributes( $item['attr'] );
+			$id = $this->generate_id_from_name( '', $id_prefix . '_' . $item['value'] );
+			$item['class'] .= ' ' . ( 'radio' == $type ? 'ipt_uif_radio' : 'ipt_uif_checkbox' );
+			$input =
+				'<div class="ipt_uif_lc">' .
+					'<input type="' . $type . '" ' . $this->checked( $checked, $item['value'] ) .
+					$data_attr . ' class="' . $item['class'] . '" ' .
+					'name="' . esc_attr( $name ) . '" id="' . $id . '" ' .
+					'value="' . esc_attr( $item['value'] ) . '" />' .
+					'<label for="' . $id . '">' . $item['label'] . '</label>' .
+				'</div>';
+			echo $input;
+		}
+		echo '</div>';
+		if ( true == $conditional ) {
+			echo '</div>';
+		}
 	}
 
 	/*==========================================================================
 	 * Container Elements
 	 *========================================================================*/
+	/**
+	 * Prints a form table
+	 *
+	 * Just pass in the item information and everything else will be taken care
+	 * of
+	 *
+	 * @param      array    $items  Associative array of items. 'name', 'label'(
+	 *                              optional ), 'ui'( valid UI callback ),
+	 *                              'param'( ui parameters ), 'help'( optional )
+	 * @param      boolean  $table  Whether to print the table body
+	 */
+	public function form_table( $items, $table = true ) {
+		if ( $table ) {
+			echo '<table class="form-table"><tbody>';
+		}
+
+		foreach ( $items as $item ) {
+			$item = wp_parse_args( $item, array(
+				'name' => '',
+				'label' => '',
+				'ui' => '',
+				'param' => array(),
+				'help' => '',
+			) );
+			echo '<tr>';
+
+			$item_colspan = 1;
+			if ( '' == $item['label'] ) {
+				$item_colspan++;
+			}
+			if ( '' == $item['help'] ) {
+				$item_colspan++;
+			}
+
+			if ( '' != $item['label'] ) {
+				echo '<th>';
+				$this->generate_label( $item['name'], $item['label'] );
+				echo '</th>';
+			}
+
+			echo '<td colspan="' . $item_colspan . '">';
+			if ( $this->check_callback( array( array( $this, $item['ui'] ), $item['param'] ) ) ) {
+				call_user_func_array( array( $this, $item['ui'] ), $item['param'] );
+			} else {
+				$this->msg_error( __( 'Invalid Callback', 'wp-cpl' ) );
+			}
+			echo '</td>';
+
+			if ( '' != $item['help'] ) {
+				echo '<td>';
+				$this->help( $item['help'] );
+				echo '</td>';
+			}
+
+			echo '</tr>';
+		}
+
+		if ( $table ) {
+			echo '</tbody></table>';
+		}
+	}
 
 	/*==========================================================================
 	 * Interactions
@@ -819,6 +1220,118 @@ class WP_CPL_Admin_UI {
 				break;
 		}
 		return $output;
+	}
+
+	/**
+	 * Standardizes items for radios and checkboxes
+	 *
+	 * @param      array  $items  The associative array of items
+	 *
+	 * @return     array   The items that is accepted by the radios and checkboxes of this UI element
+	 */
+	public function standardize_items( $items ) {
+		$new_items = array();
+		if ( ! is_array( $items ) ) {
+			$items = (array) $items;
+		}
+		foreach ( $items as $i_key => $item ) {
+			if ( is_array( $item ) ) {
+				if ( isset( $item['value'] ) ) {
+					$new_items[] = array(
+						'label' => isset( $item['label'] ) ? $item['label'] : ucfirst( $item['value'] ),
+						'value' => esc_attr( (string) $item['value'] ),
+						'data' => isset( $item['data'] ) ? (array) $item['data'] : array(),
+						'class' => isset( $item['class'] ) ? $item['class'] : '',
+						'attr' => isset( $item['attr'] ) ? (array) $item['attr'] : array(),
+					);
+				}
+			} elseif ( is_string( $item ) ) {
+				if ( is_numeric( $i_key ) ) {
+					$new_items[] = array(
+						'label' => ucfirst( $item ),
+						'value' => esc_attr( (string) $item ),
+						'data' => array(),
+						'class' => '',
+						'attr' => array(),
+					);
+				} else {
+					$new_items[] = array(
+						'label' => $item,
+						'value' => esc_attr( (string) $i_key ),
+						'data' => array(),
+						'class' => '',
+						'attr' => array(),
+					);
+				}
+			}
+		}
+
+		return $new_items;
+	}
+
+	/**
+	 * A helper function to put checked="checked" on inputs
+	 *
+	 * Compares the value $checked and $value
+	 *
+	 * If both are equal with === operator, then prints the attribute
+	 *
+	 * @param      string   $checked  The checked value
+	 * @param      string   $value    Current element value
+	 * @param      boolean  $echo     Whether to echo or not
+	 *
+	 * @return     string   The HTML attribute
+	 */
+	public function checked( $checked, $value, $echo = false ) {
+		return $this->_checked_selected_helper( $checked, $value, $echo );
+	}
+
+	/**
+	 * A helper function to put selected="selected" on inputs
+	 *
+	 * Compares the value $selected and $value
+	 *
+	 * If both are equal with === operator, then prints the attribute
+	 *
+	 * @param      string   $selected  The selected value
+	 * @param      string   $value     Current element value
+	 * @param      boolean  $echo      Whether to echo or not
+	 *
+	 * @return     string   The HTML attribute
+	 */
+	public function selected( $selected, $value, $echo = false ) {
+		return $this->_checked_selected_helper( $selected, $value, $echo, 'selected' );
+	}
+
+	/**
+	 * Helper for checked and selected generators
+	 *
+	 * An internal abstraction because comparison is same
+	 *
+	 * @access private
+	 *
+	 * @param      string   $actual  The actual value
+	 * @param      string   $value   Current element value
+	 * @param      boolean  $echo    Whether to echo
+	 * @param      string   $helper  HTML attribute ( checked|selected )
+	 *
+	 * @return     string   The resulting HTML attribute
+	 */
+	private function _checked_selected_helper( $actual, $value, $echo = false, $helper = 'checked' ) {
+		$return = '';
+		if ( is_array( $actual ) ) {
+			if ( in_array( $value, $actual, true ) ) {
+				$return = ' ' . $helper . '="' . $helper . '"';
+			}
+		} elseif ( is_string( $actual ) ) {
+			if ( $value === $actual ) {
+				$return = ' ' . $helper . '="' . $helper . '"';
+			}
+		}
+		if ( $echo ) {
+			echo $return;
+		}
+		return $return;
 	}
 
 

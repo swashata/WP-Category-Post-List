@@ -77,6 +77,11 @@ $slider-bg-color                      : color( $text-scheme, 'lighten-2' ) !defa
 $slider-lever-bg                      : $primary-color !default;
 $slider-lever-active-bg               : $primary-color-dark !default;
 
+// == Select2
+$select2-highlight                    : $primary-color !default;
+$select2-highlight-color              : color( 'shades', 'white' ) !default;
+$select2-highlight-selected           : color( $text-scheme, 'lighten-2' ) !default;
+
 // == Select
 $select-border: 1px solid #f2f2f2 !default;
 $select-background: rgba(255, 255, 255, 0.90) !default;

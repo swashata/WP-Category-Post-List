@@ -95,6 +95,7 @@ $wp_cpl_settings = get_option( 'wp-cpl-itg-op' );
 // Load the admin file
 if ( is_admin() ) {
 	require_once dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'class-wp-cpl-admin.php';
+	require_once dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'class-wp-cpl-ui-check.php';
 }
 
 // /**
