@@ -67,6 +67,7 @@ class WP_CPL_Admin_UI {
 		wp_enqueue_style( 'thickbox' );
 		wp_enqueue_style( 'wp-cpl-jquery-icon', $static_location . 'css/fonts/jquery.iconfont/jquery-ui.icon-font.css', array(), $version );
 		wp_enqueue_style( 'ipt-icomoon-fonts', $static_location . 'css/fonts/icomoon/icomoon.css', array(), $version );
+		wp_enqueue_style( 'ipt-plugin-uif-fip', $static_location . 'css/jquery.fonticonpicker.min.css', array(), $version );
 		wp_enqueue_style( 'wp-cpl-admin-ui', $static_location . 'css/wp-cpl-admin-ui.css', array(), $version );
 
 		// Enqueue all scripts
@@ -92,6 +93,7 @@ class WP_CPL_Admin_UI {
 			'dashicons'               => array(),
 			'jquery-timepicker-addon' => array( $static_location . 'js/jquery-ui-timepicker-addon.js', array( 'jquery', 'jquery-ui-datepicker' ) ),
 			'select2'                 => array( $static_location . 'js/select2.min.js', array( 'jquery' ) ),
+			'ipt-plugin-uif-fip-js'   => array( $static_location . 'js/jquery.fonticonpicker.min.js', array( 'jquery' ) ),
 			'wp-cpl-admin-ui-js'      => array( $static_location . 'js/jquery.wp-cpl-admin-ui.min.js', array() ),
 		);
 
@@ -678,23 +680,11 @@ class WP_CPL_Admin_UI {
 	 * @param      string|bool  $no             Placeholder text or false if
 	 *                                          there has to be an icon
 	 * @param      string       $by             What to pick by -> hex | class
-	 * @param      boolean      $print_cancel   The print cancel
 	 * @return     void
 	 */
-	public function icon_selector( $name, $selected_icon, $no = 'Do not show', $by = 'hex', $print_cancel = false ) {
-		$this->clear();
-		$buttons = array();
-		$buttons[] = array(
-			'', '', 'small', 'secondary', 'normal', array( 'ipt_uif_icon_cancel' ), 'button', array(), array(), '', 'close'
-		);
-		if ( false === $no ) {
-			$print_cancel = false;
-		}
+	public function iconpicker( $name, $selected_icon, $no = 'Do not show', $by = 'hex' ) {
 ?>
 <input type="text"<?php if ( false === $no ) echo ' data-no-empty="true"'; else echo ' placeholder="' . esc_attr( $no ) . '"'; ?> data-icon-by="<?php echo esc_attr( $by ); ?>" class="ipt_uif_icon_selector code small-text" size="15" name="<?php echo $name; ?>" id="<?php echo $this->generate_id_from_name( $name ); ?>" value="<?php echo esc_attr( $selected_icon ); ?>" />
-<?php if ( $print_cancel ) : ?>
-<?php $this->buttons( $buttons, '', 'ipt_uif_fip_button' ); ?>
-<?php endif; ?>
 		<?php
 		$this->clear();
 	}
@@ -1402,6 +1392,13 @@ class WP_CPL_Admin_UI {
 	<?php
 	}
 
+	/**
+	 * Creates a collapsible container with callback
+	 *
+	 * @param      string   $label     The label
+	 * @param      array    $callback  The callback
+	 * @param      boolean  $open      Whether opened at first
+	 */
 	public function collapsible( $label, $callback, $open = false ) {
 		$this->collapsible_head( $label, $open );
 		if ( ! $this->check_callback( $callback ) ) {
@@ -1412,6 +1409,12 @@ class WP_CPL_Admin_UI {
 		$this->collapsible_tail();
 	}
 
+	/**
+	 * Creates a collapsible container head
+	 *
+	 * @param      string   $label  The label
+	 * @param      boolean  $open   Whether opened at first
+	 */
 	public function collapsible_head( $label, $open = false ) {
 ?>
 <div class="ipt_uif_shadow ipt_uif_collapsible" data-opened="<?php echo $open; ?>">
@@ -1422,6 +1425,9 @@ class WP_CPL_Admin_UI {
 		<?php
 	}
 
+	/**
+	 * Ends the output of collapsible_head
+	 */
 	public function collapsible_tail() {
 ?>
 		<?php $this->clear(); ?>
@@ -1470,6 +1476,19 @@ class WP_CPL_Admin_UI {
 		$this->iconbox_tail();
 	}
 
+	/**
+	 * Create the head of iconbox
+	 *
+	 * @param      string  $label        The heading
+	 * @param      string  $icon         The icon. Consult the
+	 *                                   /static/fonts/fonts.css to pass class
+	 *                                   name
+	 * @param      int     $scroll       The scroll height value in pixels. 0 if
+	 *                                   no scroll. Default is 400.
+	 * @param      string  $id           HTML ID
+	 * @param      string  $head_button  The head button
+	 * @param      array   $classes      HTML classes
+	 */
 	public function iconbox_head( $label, $icon = 'info2', $scroll = 0, $id = '', $head_button = '', $classes = array() ) {
 		if ( '' != $head_button ) {
 			$head_button = '<div class="ipt_uif_float_right">' . $head_button . '</div>';
@@ -1498,6 +1517,9 @@ class WP_CPL_Admin_UI {
 		<?php
 	}
 
+	/**
+	 * Ends the output of iconbox head
+	 */
 	public function iconbox_tail() {
 ?>
 	</div>

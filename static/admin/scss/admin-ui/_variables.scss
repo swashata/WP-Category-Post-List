@@ -33,6 +33,14 @@ $dismiss-hover                        : color( $text-scheme, 'lighten-4' ) !defa
 $dismiss-border                       : color( $text-scheme, 'lighten-4' ) !default;
 $dismiss-color                        : color( $text-scheme, 'lighten-1' ) !default;
 
+// == FontIconPicker
+$fip-sb-border                        : $divider-color !default;
+$fip-sb-color                         : color( $text-scheme, 'lighten-5' ) !default;
+$fip-sb-hover-color                   : color( $text-scheme, 'lighten-3' ) !default;
+$fip-sbi-color                        : $secondary-text-color !default;
+$fip-single-icon-border               : color( $text-scheme, 'lighten-3' ) !default;
+$fip-single-icon-bg                   : color( $text-scheme, 'lighten-5' ) !default;
+
 // == Tab Toolbar
 $tab-toolbar-bg                       : color( $text-scheme, 'lighten-5' ) !default;
 $tab-toolbar-hover                    : color( $text-scheme, 'lighten-3' ) !default;

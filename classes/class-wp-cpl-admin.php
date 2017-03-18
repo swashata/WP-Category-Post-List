@@ -209,7 +209,7 @@ abstract class WP_CPL_Admin {
 	 * @param      boolean  $print_form  Whether to print an HTML form
 	 * @param      boolean  $apply_ui    Whether to apply User Interface JS & CSS
 	 */
-	protected function index_head( $title, $print_form = true, $apply_ui = true ) {
+	protected function index_head( $title, $print_form = true, $apply_ui = true, $max_width = '100%' ) {
 		// Store the print form for use in index_foot
 		$this->print_form = $print_form;
 
@@ -227,6 +227,7 @@ abstract class WP_CPL_Admin {
 	</div>
 	<h2><?php echo $title; ?></h2>
 	<?php $this->ui->clear(); ?>
+	<div class="ipt-ui-backoffice-main-wrap" style="max-width: <?php echo esc_attr( $max_width ); ?>">
 	<?php
 	if ( isset( $_GET['post_result'] ) ) {
 		$msg = @$this->post_result[ (int) $_GET['post_result'] ]; // Suppress a PHP Notice if msg not found
@@ -278,6 +279,7 @@ abstract class WP_CPL_Admin {
 	<?php if ( $do_action ) : ?>
 		<?php do_action( $this->pagehook . '_page_after', $this ); ?>
 	<?php endif; ?>
+	</div>
 </div>
 		<?php
 	}

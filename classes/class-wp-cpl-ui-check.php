@@ -25,7 +25,7 @@ class WP_CPL_UI_Check extends WP_CPL_Admin {
 	 */
 	public function index() {
 		global $wp_cpl_settings;
-		$this->index_head( __( 'Checking all UI Elements', 'wp-cpl' ) );
+		$this->index_head( __( 'Checking all UI Elements', 'wp-cpl' ), true, true, '1400px' );
 		// Do the fun stuff
 		$tabs = array();
 		// Interactions
@@ -368,6 +368,10 @@ class WP_CPL_UI_Check extends WP_CPL_Admin {
 		<tr>
 			<th><?php $this->ui->generate_label( 'spinner', __( 'Spinner', 'wp-cpl' ) ); ?></th>
 			<td><?php $this->ui->spinner( 'spinner', 50, __( 'Number', 'wp-cpl' ), -100, 100, 10 ); ?></td>
+		</tr>
+		<tr>
+			<th><?php $this->ui->generate_label( 'iconpicker', 'Iconpicker' ); ?></th>
+			<td><?php $this->ui->iconpicker( 'iconpicker', 0xe068 ); ?></td>
 		</tr>
 	</tbody>
 </table>
