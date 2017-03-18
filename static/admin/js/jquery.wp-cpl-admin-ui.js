@@ -145,8 +145,13 @@
 			if ( typeof( $.fn.select2 ) == 'undefined' ) {
 				return;
 			}
-			var that = this;
-			$( 'select.ipt_uif_select' ).select2();
+			$( 'select.ipt_uif_select:not(.ipt_uif_heading_type)' ).select2();
+			// Something special for the heading
+			$( 'select.ipt_uif_heading_type' ).select2({
+				templateResult: function( state ) {
+					return $( '<span class="ipt_uif_ht heading-' + state.id + '">' + state.text + '</span>' );
+				}
+			});
 		},
 
 		// Checkbox Toggler

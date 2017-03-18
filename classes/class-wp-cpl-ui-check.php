@@ -36,6 +36,7 @@ class WP_CPL_UI_Check extends WP_CPL_Admin {
 			'scroll' => false,
 			'classes' => array(),
 			'has_inner_tab' => false,
+			'icon' => 'pages',
 		);
 
 		// jQuery UI Elements
@@ -46,6 +47,7 @@ class WP_CPL_UI_Check extends WP_CPL_Admin {
 			'scroll' => false,
 			'classes' => array(),
 			'has_inner_tab' => false,
+			'icon' => 'pages',
 		);
 
 		// HTML UI Elements
@@ -56,6 +58,7 @@ class WP_CPL_UI_Check extends WP_CPL_Admin {
 			'scroll' => false,
 			'classes' => array(),
 			'has_inner_tab' => true,
+			'icon' => 'pages',
 		);
 
 		// Invalid callback
@@ -66,6 +69,7 @@ class WP_CPL_UI_Check extends WP_CPL_Admin {
 			'scroll' => false,
 			'classes' => array(),
 			'has_inner_tab' => false,
+			'icon' => 'pages',
 		);
 		$this->ui->ui_loader();
 		echo '<div class="ipt_uif_ui_hidden_init">';
@@ -90,18 +94,25 @@ class WP_CPL_UI_Check extends WP_CPL_Admin {
 			'scroll' => true,
 			'has_inner_tab' => false,
 		);
+		$tabs[] = array(
+			'id' => 'wp_cpl_helper_ui',
+			'label' => 'Helper UI',
+			'callback' => array( array( $this, 'helper_ui' ), array() ),
+			'scroll' => true,
+			'has_inner_tab' => false,
+		);
 
 		$this->ui->tabs( $tabs, false, true );
 	}
 
-	public function input_ui() {
+	public function helper_ui() {
 		$items = array();
 		// Text
 		$items[] = array(
-			'name' => 'ip_text',
-			'label' => 'Input Text',
-			'ui' => 'text',
-			'param' => array( 'ip_text', 'value', 'placeholder' ),
+			'name' => 'hp_ht',
+			'label' => 'Heading Type',
+			'ui' => 'heading_type',
+			'param' => array( 'hp_ht', 'h2' ),
 			'help' => 'Desc',
 		);
 		// Number
@@ -126,6 +137,52 @@ class WP_CPL_UI_Check extends WP_CPL_Admin {
 			'label' => 'Input Spinner',
 			'ui' => 'spinner',
 			'param' => array( 'ip_spinner', 'value', 'placeholder', -10, 100, 2 ),
+			'help' => 'Desc',
+		);
+		// Textarea
+		$items[] = array(
+			'name' => 'ip_textarea',
+			'label' => 'Input Textarea',
+			'ui' => 'textarea',
+			'param' => array( 'ip_textarea', '<p>HTML</p>', 'placeholder', 10 ),
+			'help' => 'Desc',
+		);
+
+		$this->ui->form_table( $items );
+	}
+
+	public function input_ui() {
+		$items = array();
+		// Text
+		$items[] = array(
+			'name' => 'ip_text',
+			'label' => 'Input Text',
+			'ui' => 'text',
+			'param' => array( 'ip_text', 'value', 'placeholder' ),
+			'help' => 'Desc',
+		);
+		// Number
+		$items[] = array(
+			'name' => 'ip_num',
+			'label' => 'Input Number',
+			'ui' => 'text',
+			'param' => array( 'ip_num', '10', 'placeholder', 'number' ),
+			'help' => 'Desc',
+		);
+		// Password
+		$items[] = array(
+			'name' => 'ip_pass',
+			'label' => 'Input Password',
+			'ui' => 'password',
+			'param' => array( 'ip_pass', 'value', 'placeholder' ),
+			'help' => 'Desc',
+		);
+		// Spinner
+		$items[] = array(
+			'name' => 'ip_spinner',
+			'label' => 'Input Spinner',
+			'ui' => 'spinner',
+			'param' => array( 'ip_spinner', '50', 'placeholder', -10, 100, 2 ),
 			'help' => 'Desc',
 		);
 		// Textarea

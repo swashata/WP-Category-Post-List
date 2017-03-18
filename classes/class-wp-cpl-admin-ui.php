@@ -187,24 +187,27 @@ class WP_CPL_Admin_UI {
 		$data_collapsible = ( $collapsible == true ) ? ' data-collapsible="true"' : '';
 		$classes = array( 'ipt_uif_tabs' );
 		$classes[] = ( $vertical == true ) ? 'vertical' : 'horizontal';
+		// Standardize the tabs
+		foreach ( $tabs as $key => $tab ) {
+			$tabs[ $key ] = wp_parse_args( $tab, array(
+				'id' => '',
+				'label' => '',
+				'callback' => '',
+				'scroll' => true,
+				'classes' => array(),
+				'has_inner_tab' => false,
+				'icon' => 'none',
+			) );
+		}
 ?>
 <div<?php echo $data_collapsible; ?> class="<?php echo implode( ' ', $classes ); ?>">
 	<ul>
 		<?php foreach ( $tabs as $tab ) : ?>
-		<li><a href="#<?php echo $tab['id']; ?>"><?php echo $tab['label']; ?></a></li>
+		<li><a href="#<?php echo $tab['id']; ?>"><?php $this->print_icon( $tab['icon'] ); ?><?php echo $tab['label']; ?></a></li>
 		<?php endforeach; ?>
 	</ul>
 	<?php foreach ( $tabs as $tab ) : ?>
 		<?php
-		$tab = wp_parse_args( $tab, array(
-			'id' => '',
-			'label' => '',
-			'callback' => '',
-			'scroll' => true,
-			'classes' => array(),
-			'has_inner_tab' => false,
-		) );
-
 		if ( ! $this->check_callback( $tab['callback'] ) ) {
 			$tab['callback'] = array(
 				array( $this, 'msg_error' ), array( __( 'Invalid Callback', 'wp-cpl' ) ),
@@ -405,6 +408,254 @@ class WP_CPL_Admin_UI {
 		$additional_settings['textarea_name'] = $name;
 		$editor_id = $this->generate_id_from_name( $name );
 		wp_editor( $value, $editor_id, $additional_settings );
+	}
+
+	/**
+	 * Prints a WP Color Picker
+	 *
+	 * Creates iris color picker internally
+	 *
+	 * @param      string  $name         HTML name
+	 * @param      string  $value        Default value ( checks for existance of # which is required )
+	 * @param      string  $placeholder  HTML placeholder
+	 */
+	public function colorpicker( $name, $value, $placeholder = '' ) {
+		$value = '#' . ltrim( $value, '#' );
+		$this->text( $name, $value, $placeholder, 'text', 'small', 'normal', array( 'ipt_uif_colorpicker', 'code' ) );
+	}
+
+	public function upload( $name, $value, $title_name = '', $label = 'Upload', $title = 'Choose Image', $select = 'Use Image', $width = '', $height = '', $background_size = '' ) {
+		$data = array(
+			'title' => $title,
+			'select' => $select,
+			'settitle' => $this->generate_id_from_name( $title_name ),
+		);
+		$buttons = array();
+		$buttons[] = array(
+			$label, '', 'small', 'secondary', 'normal', array( 'ipt_uif_upload_button' ), 'button', array(), array(), '', 'upload'
+		);
+		$buttons[] = array(
+			'', '', 'small', 'secondary', 'normal', array( 'ipt_uif_upload_cancel' ), 'button', array(), array(), '', 'close'
+		);
+		$preview_style = '';
+		$container_style = '';
+		if ( $width != '' ) {
+			$container_style .= 'max-width: none; width: ' . $width . ';';
+		}
+		if ( $height != '' ) {
+			$container_style .= 'height: ' . $height . ';';
+		}
+		$preview_style .= 'height: 100%;';
+		if ( $background_size != '' ) {
+			$preview_style .= 'background-size: ' . $background_size . ';';
+		}
+?>
+<div class="ipt_uif_upload">
+	<div class="ipt_uif_upload_bg" style="<?php echo esc_attr( $container_style ); ?>">
+		<div style="<?php echo esc_attr( $preview_style ); ?>" class="ipt_uif_upload_preview"></div>
+	</div>
+	<input<?php echo $this->convert_data_attributes( $data ); ?> type="text" name="<?php echo $name; ?>" id="<?php echo $this->generate_id_from_name( $name ); ?>" value="<?php echo esc_attr( $value ); ?>" class="ipt_uif_text fit" />
+	<?php //$this->button( $label, '', 'small', 'secondary', 'normal', array(), 'button', false ); ?>
+	<?php $this->buttons( $buttons, '', 'center' ); ?>
+</div>
+		<?php
+	}
+
+	public function dropdown_pages( $args = '' ) {
+		$defaults = array(
+			//Dropdown arguments
+			'name' => 'page_id',
+			'selected' => 0,
+			'validation' => false,
+			'disabled' => false,
+			'show_option_none' => '',
+			'option_none_value' => '0',
+			//Page arguments
+			'depth' => 0,
+			'child_of' => 0,
+		);
+		$r = wp_parse_args( $args, $defaults );
+		extract( $r, EXTR_SKIP );
+
+		$pages = get_pages( $r );
+
+		$items = array();
+
+		if ( '' != $show_option_none ) {
+			$items[] = array(
+				'value' => $option_none_value,
+				'label' => $show_option_none,
+			);
+		}
+
+		foreach ( $pages as $page ) {
+			$items[] = array(
+				'value' => $page->ID,
+				'label' => $page->post_title,
+			);
+		}
+
+		$this->select( $name, $items, $selected, $validation, false, $disabled );
+	}
+
+
+	/*==========================================================================
+	 * Helper UI
+	 *========================================================================*/
+	/**
+	 * Select the heading type
+	 *
+	 * @param      string  $name      HTML Name
+	 * @param      string  $selected  Selected item
+	 */
+	public function heading_type( $name, $selected ) {
+		$items = array();
+		for ( $i = 1; $i <= 6; $i++ ) {
+			$items[] = array(
+				'label' => sprintf( _x( 'Heading %1$d', 'wp-cpl-ui-heading', 'wp-cpl' ), $i ),
+				'value' => 'h' . $i,
+			);
+		}
+
+		$this->select( $name, $items, $selected, false, false, array( 'ipt_uif_heading_type' ) );
+	}
+
+	/**
+	 * Layout Selector
+	 *
+	 * @param      string  $name      HTML Name
+	 * @param      string  $selected  Selected item
+	 */
+	public function layout_select( $name, $selected ) {
+		$id = $this->generate_id_from_name( $name );
+?>
+<div class="ipt_uif_radio_layout_wrap">
+<?php for ( $i = 1; $i <= 4; $i++ ) : $layout = (string) $i; ?>
+<input type="radio" class="ipt_uif_radio ipt_uif_radio_layout" name="<?php echo esc_attr( $name ); ?>" id="<?php echo $id . '_' . $i; ?>" value="<?php echo $i; ?>"<?php $this->checked( $layout, $selected ); ?> />
+<label title="<?php echo sprintf( _nx( '%d Column', '%d Columns', $i, 'eform-admin-layout', 'ipt_fsqm' ), $i ); ?>" for="<?php echo $id . '_' . $i; ?>" class="ipt_uif_label_layout ipt_uif_label_layout_<?php echo $i; ?>"><?php echo $i; ?></label>
+<?php endfor; ?>
+<input type="radio" class="ipt_uif_radio ipt_uif_radio_layout" name="<?php echo esc_attr( $name ); ?>" id="<?php echo $id . '_random'; ?>" value="random"<?php $this->checked( 'random', $selected ); ?> />
+<label title="<?php _e( 'Automatic Columns', 'ipt_fsqm' ); ?>" for="<?php echo $id . '_random'; ?>" class="ipt_uif_label_layout ipt_uif_label_layout_random"><?php _e( 'Auto', 'ipt_fsqm' ); ?></label>
+</div>
+		<?php
+	}
+
+	/**
+	 * Alignment Selector
+	 *
+	 * @param      string  $name     HTML Name
+	 * @param      string  $checked  The checked one
+	 */
+	public function alignment_radio( $name, $checked ) {
+		$items = array(
+			'left', 'center', 'right', 'justify',
+		);
+?>
+<div class="ipt_uif_radio_align_wrap">
+<?php foreach ( $items as $item ) : ?>
+<?php $id = $this->generate_id_from_name( $name ) . '_' . $item; ?>
+<input type="radio" class="ipt_uif_radio ipt_uif_radio_align" name="<?php echo $name; ?>" id="<?php echo $id; ?>" value="<?php echo $item; ?>"<?php $this->checked( $item, $checked ); ?> />
+<label for="<?php echo $id; ?>" class="ipt_uif_label_align_<?php echo $item; ?>"><?php echo ucfirst( $item ); ?></label>
+<?php endforeach; ?>
+</div>
+		<?php
+	}
+
+	/**
+	 * Web Font selector
+	 *
+	 * Works only for google fonts
+	 *
+	 * @param      string  $name      HTML name
+	 * @param      string  $selected  Selected fonts
+	 * @param      array   $fonts     Associative array of fonts
+	 */
+	public function webfonts( $name, $selected, $fonts ) {
+		$items = array();
+		foreach ( $fonts as $f_key => $font ) {
+			$items[] = array(
+				'label' => $font['label'],
+				'value' => $f_key,
+				'data' => array(
+					'fontinclude' => $font['include'],
+				),
+			);
+		}
+
+		echo '<div class="ipt_uif_font_selector">';
+
+		$this->select( $name, $items, $selected );
+		echo ' <span class="ipt_uif_font_preview">Grumpy <strong>wizards</strong> <em>make</em> <strong><em>toxic brew</em></strong> for the evil Queen and Jack.</span>';
+
+		echo '</div>';
+	}
+
+	/*==========================================================================
+	 * ICON SELECTOR
+	 *========================================================================*/
+
+	/**
+	 * Print a font Icon Picker
+	 *
+	 * @param      string       $name           HTML Name
+	 * @param      string|int   $selected_icon  Selected Icon Code
+	 * @param      string|bool  $no             Placeholder text or false if
+	 *                                          there has to be an icon
+	 * @param      string       $by             What to pick by -> hex | class
+	 * @param      boolean      $print_cancel   The print cancel
+	 * @return     void
+	 */
+	public function icon_selector( $name, $selected_icon, $no = 'Do not show', $by = 'hex', $print_cancel = false ) {
+		$this->clear();
+		$buttons = array();
+		$buttons[] = array(
+			'', '', 'small', 'secondary', 'normal', array( 'ipt_uif_icon_cancel' ), 'button', array(), array(), '', 'close'
+		);
+		if ( false === $no ) {
+			$print_cancel = false;
+		}
+?>
+<input type="text"<?php if ( false === $no ) echo ' data-no-empty="true"'; else echo ' placeholder="' . esc_attr( $no ) . '"'; ?> data-icon-by="<?php echo esc_attr( $by ); ?>" class="ipt_uif_icon_selector code small-text" size="15" name="<?php echo $name; ?>" id="<?php echo $this->generate_id_from_name( $name ); ?>" value="<?php echo esc_attr( $selected_icon ); ?>" />
+<?php if ( $print_cancel ) : ?>
+<?php $this->buttons( $buttons, '', 'ipt_uif_fip_button' ); ?>
+<?php endif; ?>
+		<?php
+		$this->clear();
+	}
+
+	public function print_icon_by_class( $icon = 'none', $size = 24 ) {
+		if ( is_numeric( $icon ) ) {
+			$this->print_icon_by_data( $icon, $size );
+			return;
+		}
+?>
+<?php if ( $icon != 'none' ) : ?>
+<i class="ipt-icomoon-<?php echo esc_attr( $icon ); ?> ipticm" style="font-size: <?php echo $size; ?>px;"></i>
+<?php endif; ?>
+		<?php
+	}
+
+	public function print_icon_by_data( $data = 'none', $size = 24 ) {
+		if ( ! is_numeric( $data ) ) {
+			$this->print_icon_by_class( $data, $size );
+			return;
+		}
+?>
+<?php if ( $data != 'none' ) : ?>
+<i class="ipticm" data-ipt-icomoon="&#x<?php echo dechex( $data ); ?>;" style="font-size: <?php echo $size; ?>px;"></i>
+<?php endif; ?>
+		<?php
+	}
+
+	public function print_icon( $icon = 'none', $size = 24 ) {
+		if ( 'none' == $icon || empty( $icon ) ) {
+			return;
+		}
+		if ( is_numeric( $icon ) ) {
+			$this->print_icon_by_data( $icon, $size );
+		} else {
+			$this->print_icon_by_class( $icon, $size );
+		}
 	}
 
 	/*==========================================================================
@@ -1073,6 +1324,261 @@ class WP_CPL_Admin_UI {
 	</div>
 </div>
 	<?php
+	}
+
+	public function collapsible( $label, $callback, $open = false ) {
+?>
+<div class="ipt_uif_shadow glowy ipt_uif_collapsible" data-opened="<?php echo $open; ?>">
+	<div class="ipt_uif_box cyan">
+		<h3><a class="ipt_uif_collapsible_handle_anchor" href="javascript:;"><span class="ipt-icomoon-file3 heading_icon"></span><span class="ipt-icomoon-arrow-down2 collapsible_state"></span><?php echo $label; ?></a></h3>
+	</div>
+	<?php $this->div( 'ipt_uif_collapsed', $callback ); ?>
+</div>
+		<?php
+	}
+
+	public function collapsible_head( $label, $open = false ) {
+?>
+<div class="ipt_uif_shadow glowy ipt_uif_collapsible" data-opened="<?php echo $open; ?>">
+	<div class="ipt_uif_box cyan">
+		<h3><a class="ipt_uif_collapsible_handle_anchor" href="javascript:;"><span class="ipt-icomoon-file3 heading_icon"></span><span class="ipt-icomoon-arrow-down2 collapsible_state"></span><?php echo $label; ?></a></h3>
+	</div>
+	<div class="ipt_uif_collapsed">
+		<?php
+	}
+
+	public function collapsible_tail() {
+?>
+		<?php $this->clear(); ?>
+	</div>
+</div>
+		<?php
+	}
+
+	/**
+	 * Create a box container nested inside a shadow container.
+	 *
+	 * @param array   $styles  Array of shadow style and box style.
+	 * @param mixed   (array|string) $callback The callback function to populate.
+	 * @param int     $scroll  The scroll height value in pixels. 0 if no scroll. Default is 400.
+	 * @param string  $id      HTML ID
+	 * @param array   $classes HTML classes
+	 */
+	public function shadowbox( $styles, $callback, $scroll = 0, $id = '', $classes = array() ) {
+		if ( !is_array( $styles ) ) {
+			$styles = array( 'lifted_corner', 'cyan' );
+		}
+		$styles[0] = array_merge( (array) $styles[0], array( 'ipt_uif_shadow' ) );
+		$styles[1] = array_merge( (array) $styles[1], array( 'ipt_uif_box' ) );
+		$this->div( $styles, $callback, $scroll, $id, $classes );
+	}
+
+	/**
+	 * Creates a nice looking container with an icon on top
+	 *
+	 * @param string  $label   The heading
+	 * @param mixed   (array|string) $callback The callback function to populate.
+	 * @param string  $icon    The icon. Consult the /static/fonts/fonts.css to pass class name
+	 * @param int     $scroll  The scroll height value in pixels. 0 if no scroll. Default is 400.
+	 * @param string  $id      HTML ID
+	 * @param array   $classes HTML classes
+	 * @return type
+	 */
+	public function iconbox( $label, $callback, $icon = 'info2', $scroll = 0, $id = '', $classes = array() ) {
+		if ( !$this->check_callback( $callback ) ) {
+			$this->msg_error( 'Invalid Callback supplied' );
+			return;
+		}
+?>
+<div class="ipt_uif_iconbox">
+	<div class="ipt_uif_box cyan">
+		<h3><span class="ipt-icomoon-<?php echo esc_attr( $icon ); ?>"></span><?php echo $label; ?></h3>
+	</div>
+	<?php $this->div( 'ipt_uif_iconbox_inner', $callback, $scroll, $id, $classes ); ?>
+</div>
+		<?php
+	}
+
+	public function iconbox_head( $label, $icon, $after = '' ) {
+		if ( '' != $after ) {
+			$after = '<div class="ipt_uif_float_right">' . $after . '</div>';
+		}
+?>
+<div class="ipt_uif_iconbox">
+	<div class="ipt_uif_box cyan ipt_uif_container_head">
+		<?php echo $after; ?><h3><span class="ipt-icomoon-<?php echo esc_attr( $icon ); ?>"></span><?php echo $label; ?></h3>
+	</div>
+	<div class="ipt_uif_iconbox_inner">
+		<?php
+	}
+
+	public function iconbox_tail() {
+?>
+	</div>
+</div>
+		<?php
+	}
+
+	/*==========================================================================
+	 * SORTABLE DRAGGABLE & ADDABLE LIST
+	 *========================================================================*/
+	/**
+	 * Creates a Sortable, Draggable and/or Addable container UI.
+	 *
+	 * @param array   $settings An associative array of settings. The format is
+	 * <code>
+	 * array(
+	 *      'key' => '__SDAKEY__',
+	 *      'columns' => array(
+	 *          0 => array(
+	 *              'label' => 'Heading',
+	 *              'size' => '10',
+	 *              'type' => 'text', //This is the callback function from IPT_Plugin_UIF_Admin
+	 *          ),
+	 *      ),
+	 *      'features' => array(
+	 *          'sortable' => true,
+	 *          'draggable' => true,
+	 *          'addable' => true,
+	 *      ),
+	 *      'labels' => array(
+	 *          'confirm' => 'Confirm delete. The action can not be undone.',
+	 *          'add' => 'Add New Item',
+	 *          'del' => 'Click to delete',
+	 *          'drag' => 'Drag this to rearrange',
+	 *      ),
+	 * );
+	 * </code>
+	 * @param array   $items    An associative array of items. The format is
+	 * <code>
+	 * array(
+	 *      array([...,])[,...]
+	 * )
+	 * </code>
+	 * Each array should be a list of parameters to the callback function.
+	 * @param array   $data     An associative array of callbacks for the data section. The key passed here should match with settings[key]
+	 * <code>
+	 * array([,...])
+	 * </code>
+	 */
+	public function sda_list( $settings, $items, $data, $max_key, $id = '' ) {
+		$default = array(
+			'key' => '__SDAKEY__',
+			'columns' => array(),
+			'features' => array(),
+			'labels' => array(),
+		);
+		$settings = wp_parse_args( $settings, $default );
+		$settings['labels'] = wp_parse_args( $settings['labels'], array(
+			'confirm' => 'Confirm delete. The action can not be undone.',
+			'confirmtitle' => 'Confirm Deletion',
+			'add' => 'Add New Item',
+			'del' => 'Click to delete',
+			'drag' => 'Drag this to rearrange',
+		) );
+		$settings['features'] = wp_parse_args( $settings['features'], array(
+			'draggable' => true,
+			'addable' => true,
+		) );
+		$data_total = 0;
+		$feature_attr = $this->convert_data_attributes( $settings['features'] );
+
+		if ( $max_key == null && empty( $items ) ) { //No items
+			$max_key = 0;
+		} else { //Passed the largest key for the items, so should start from the very next key
+			$max_key = $max_key + 1;
+		}
+
+		$sda_body_classes = array( 'ipt_uif_sda_body' );
+		if ( true == $settings['features']['draggable'] || true == $settings['features']['addable'] ) {
+			$sda_body_classes[] = 'eform-sda-has-toolbar';
+		}
+?>
+<div class="ipt-backoffice-sda-wrap"<?php echo ($id != '' ? ' id="' . esc_attr( $id ) . '"' : '') ?>>
+	<div class="ipt-backoffice-sda-inner">
+		<div class="ipt-eform-sda ipt_uif_sda"<?php echo $feature_attr; ?>>
+			<div class="<?php echo implode( ' ', $sda_body_classes ); ?>" data-buttontext="<?php printf( _x( 'please click on %1$s button to get started', 'ipt_uif_sda', 'ipt_fsqm' ), strtoupper( $settings['labels']['add'] ) ); ?>">
+				<?php foreach ( $items as $item ) : ?>
+				<div class="ipt_uif_sda_elem">
+					<?php if ( true == $settings['features']['draggable'] || true == $settings['features']['addable'] ) : ?>
+						<div class="ipt-eform-sda-toolbar">
+							<?php if ( true == $settings['features']['draggable'] ) : ?>
+								<div class="ipt_uif_sda_drag"><i class="ipt-icomoon-bars"></i></div>
+							<?php endif; ?>
+							<?php if ( true == $settings['features']['addable'] ) : ?>
+								<div class="ipt_uif_sda_del"><i class="ipt-icomoon-times"></i></div>
+							<?php endif; ?>
+						</div>
+					<?php endif; ?>
+
+					<?php foreach ( $settings['columns'] as $col_key => $column ) : ?>
+					<div class="ipt_uif_sda_column_<?php echo $column['size']; ?>">
+						<?php $this->generate_label( is_string( $item[ $col_key ][0] ) ? $item[ $col_key ][0] : '', $column['label'] ); ?>
+						<?php call_user_func_array( array( $this, $column['type'] ), (array)$item[$col_key] ); ?>
+					</div>
+					<?php endforeach; ?>
+
+					<div class="clear"></div>
+				</div>
+				<?php $data_total++; endforeach; ?>
+			</div>
+
+			<script type="text/html" class="ipt_uif_sda_data">
+				<?php ob_start(); ?>
+				<?php if ( true == $settings['features']['draggable'] || true == $settings['features']['addable'] ) : ?>
+					<div class="ipt-eform-sda-toolbar">
+						<?php if ( true == $settings['features']['draggable'] ) : ?>
+							<div class="ipt_uif_sda_drag"><i class="ipt-icomoon-bars"></i></div>
+						<?php endif; ?>
+						<?php if ( true == $settings['features']['addable'] ) : ?>
+							<div class="ipt_uif_sda_del"><i class="ipt-icomoon-times"></i></div>
+						<?php endif; ?>
+					</div>
+				<?php endif; ?>
+
+				<?php foreach ( $settings['columns'] as $col_key => $column ) : ?>
+				<div class="ipt_uif_sda_column_<?php echo $column['size']; ?>">
+					<?php $this->generate_label( is_string( $data[ $col_key ][0] ) ? $data[ $col_key ][0] : '', $column['label'] ); ?>
+					<?php call_user_func_array( array( $this, $column['type'] ), $data[$col_key] ); ?>
+				</div>
+				<?php endforeach; ?>
+
+				<div class="clear"></div>
+
+				<?php
+		$output = ob_get_clean();
+		echo htmlspecialchars( $output );
+?>
+			</script>
+			<?php
+			if ( true == $settings['features']['addable'] ) {
+				$buttons = array();
+				$buttons[] = array(
+					$settings['labels']['add'],
+					'',
+					'small',
+					'secondary',
+					'normal',
+					array( 'ipt_uif_sda_button' ),
+					'button',
+					array(
+						'total' => $data_total,
+						'count' => $max_key,
+						'key' => $settings['key'],
+						'confirm' => $settings['labels']['confirm'],
+					),
+					array(),
+					'',
+					'plus',
+				);
+
+				$this->buttons( $buttons, '', array( 'ipt_uif_sda_foot' ) );
+			}
+			?>
+		</div>
+	</div>
+</div>
+		<?php
 	}
 
 	/*==========================================================================
