@@ -947,7 +947,7 @@ class WP_CPL_Admin_UI {
 	 * @param      array   $validation   Associative array of all validation
 	 *                                   clauses
 	 */
-	public function password( $name, $value, $placeholder, $size = 'fit', $state = 'normal', $classes = array(), $data = false, $attr = array(), $validation = false ) {
+	public function password( $name, $value, $placeholder, $size = '', $state = 'normal', $classes = array(), $data = false, $attr = array(), $validation = false ) {
 		if ( ! is_array( $classes ) ) {
 			$classes = (array) $classes;
 		}
