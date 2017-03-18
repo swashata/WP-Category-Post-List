@@ -30,6 +30,16 @@ class WP_CPL_UI_Check extends WP_CPL_Admin {
 		$tabs = array();
 		// Interactions
 		$tabs[] = array(
+			'id' => 'wp_cpl_wp_ui',
+			'label' => __( 'WordPress UI', 'wp-cpl' ),
+			'callback' => array( array( $this, 'wp_ui' ), array() ),
+			'scroll' => false,
+			'classes' => array(),
+			'has_inner_tab' => false,
+			'icon' => 'wordpress',
+		);
+		// Interactions
+		$tabs[] = array(
 			'id' => 'wp_cpl_interactions',
 			'label' => __( 'Interactions', 'wp-cpl' ),
 			'callback' => array( array( $this, 'interactions' ), array() ),
@@ -76,6 +86,34 @@ class WP_CPL_UI_Check extends WP_CPL_Admin {
 		$this->ui->tabs( $tabs );
 		echo '</div>';
 		$this->index_foot( true, true );
+	}
+
+	public function wp_ui() {
+		// Upload
+		$items[] = array(
+			'name' => 'upload',
+			'label' => 'Upload',
+			'ui' => 'upload',
+			'param' => array( 'upload', 'http://localhost/org/wp-content/uploads/2017/03/d7c89699-0a13-31ad-845e-35d5d653d5b1.jpg' ),
+			'help' => 'Desc',
+		);
+		// Colorpicker
+		$items[] = array(
+			'name' => 'colorpicker',
+			'label' => 'Colorpicker',
+			'ui' => 'colorpicker',
+			'param' => array( 'colorpicker', '#eeeeee' ),
+			'help' => 'Desc',
+		);
+		// dropdown_pages
+		$items[] = array(
+			'name' => 'dropdown_pages',
+			'label' => 'Dropdown Pages',
+			'ui' => 'dropdown_pages',
+			'param' => array( 'dropdown_pages', '84' ),
+			'help' => 'Desc',
+		);
+		$this->ui->form_table( $items );
 	}
 
 	public function html_ui() {

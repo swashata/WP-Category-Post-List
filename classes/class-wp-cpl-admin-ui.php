@@ -426,7 +426,10 @@ class WP_CPL_Admin_UI {
 		$this->text( $name, $value, $placeholder, 'text', 'small', 'normal', array( 'ipt_uif_colorpicker', 'code' ) );
 	}
 
-	public function upload( $name, $value, $title_name = '', $label = 'Upload', $title = 'Choose Image', $select = 'Use Image', $width = '', $height = '', $background_size = '' ) {
+	public function upload( $name, $value, $title_name = '', $width = '', $height = '', $background_size = '' ) {
+		$label = __( 'Upload', 'wp-cpl' );
+		$title = __( 'Choose Image', 'wp-cpl' );
+		$select = __( 'Use Image', 'wp-cpl' );
 		$data = array(
 			'title' => $title,
 			'select' => $select,
@@ -434,10 +437,10 @@ class WP_CPL_Admin_UI {
 		);
 		$buttons = array();
 		$buttons[] = array(
-			$label, '', 'small', 'secondary', 'normal', array( 'ipt_uif_upload_button' ), 'button', array(), array(), '', 'upload'
+			'<i class="ipt-icomoon-upload"></i> ' . $label, '', 'small', 'button', '', false, array( 'ipt_uif_upload_button' )
 		);
 		$buttons[] = array(
-			'', '', 'small', 'secondary', 'normal', array( 'ipt_uif_upload_cancel' ), 'button', array(), array(), '', 'close'
+			'<i class="ipt-icomoon-close"></i>', '', 'small', 'button', '', false, array( 'ipt_uif_upload_cancel' )
 		);
 		$preview_style = '';
 		$container_style = '';
@@ -458,38 +461,27 @@ class WP_CPL_Admin_UI {
 	</div>
 	<input<?php echo $this->convert_data_attributes( $data ); ?> type="text" name="<?php echo $name; ?>" id="<?php echo $this->generate_id_from_name( $name ); ?>" value="<?php echo esc_attr( $value ); ?>" class="ipt_uif_text fit" />
 	<?php //$this->button( $label, '', 'small', 'secondary', 'normal', array(), 'button', false ); ?>
-	<?php $this->buttons( $buttons, '', 'center' ); ?>
+	<?php $this->buttons( $buttons, true, '', 'center' ); ?>
 </div>
 		<?php
 	}
 
-	public function dropdown_pages( $args = '' ) {
+	public function dropdown_pages( $name, $selected, $placeholder = '', $args = array() ) {
 		$defaults = array(
-			//Dropdown arguments
-			'name' => 'page_id',
-			'selected' => 0,
-			'validation' => false,
-			'disabled' => false,
-			'show_option_none' => '',
-			'option_none_value' => '0',
-			//Page arguments
+			// Page arguments
 			'depth' => 0,
 			'child_of' => 0,
 		);
 		$r = wp_parse_args( $args, $defaults );
-		extract( $r, EXTR_SKIP );
-
 		$pages = get_pages( $r );
 
 		$items = array();
-
-		if ( '' != $show_option_none ) {
+		if ( '' != $placeholder ) {
 			$items[] = array(
 				'value' => $option_none_value,
-				'label' => $show_option_none,
+				'label' => __( 'Please select', 'wp-cpl' ),
 			);
 		}
-
 		foreach ( $pages as $page ) {
 			$items[] = array(
 				'value' => $page->ID,
@@ -497,7 +489,7 @@ class WP_CPL_Admin_UI {
 			);
 		}
 
-		$this->select( $name, $items, $selected, $validation, false, $disabled );
+		$this->select( $name, $items, $selected );
 	}
 
 
