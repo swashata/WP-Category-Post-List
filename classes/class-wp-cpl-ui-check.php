@@ -84,21 +84,21 @@ class WP_CPL_UI_Check extends WP_CPL_Admin {
 			'id' => 'wp_cpl_choice_ui',
 			'label' => 'Choice UI',
 			'callback' => array( array( $this, 'choice_ui' ), array() ),
-			'scroll' => true,
+			'scroll' => false,
 			'has_inner_tab' => false,
 		);
 		$tabs[] = array(
 			'id' => 'wp_cpl_input_ui',
 			'label' => 'Input UI',
 			'callback' => array( array( $this, 'input_ui' ), array() ),
-			'scroll' => true,
+			'scroll' => false,
 			'has_inner_tab' => false,
 		);
 		$tabs[] = array(
 			'id' => 'wp_cpl_helper_ui',
 			'label' => 'Helper UI',
 			'callback' => array( array( $this, 'helper_ui' ), array() ),
-			'scroll' => true,
+			'scroll' => false,
 			'has_inner_tab' => false,
 		);
 
@@ -107,7 +107,7 @@ class WP_CPL_UI_Check extends WP_CPL_Admin {
 
 	public function helper_ui() {
 		$items = array();
-		// Text
+		// Heading Type
 		$items[] = array(
 			'name' => 'hp_ht',
 			'label' => 'Heading Type',
@@ -115,36 +115,28 @@ class WP_CPL_UI_Check extends WP_CPL_Admin {
 			'param' => array( 'hp_ht', 'h2' ),
 			'help' => 'Desc',
 		);
-		// Number
+		// Layout Select
 		$items[] = array(
-			'name' => 'ip_num',
-			'label' => 'Input Number',
-			'ui' => 'text',
-			'param' => array( 'ip_num', 'value', 'placeholder', 'number' ),
+			'name' => 'layout_select',
+			'label' => 'Layout Select',
+			'ui' => 'layout_select',
+			'param' => array( 'layout_select', '2' ),
 			'help' => 'Desc',
 		);
-		// Password
+		// Position Select
 		$items[] = array(
-			'name' => 'ip_pass',
-			'label' => 'Input Password',
-			'ui' => 'password',
-			'param' => array( 'ip_pass', 'value', 'placeholder' ),
+			'name' => 'position_select',
+			'label' => 'Position Select',
+			'ui' => 'position_select',
+			'param' => array( 'position_select', 'bottom', array( array( 'value' => 'cover', 'label' => '<span title="Testing Cover"><img src="https://i.imgur.com/0jdGwTy.jpg" /></span>' ) ) ),
 			'help' => 'Desc',
 		);
-		// Spinner
+		// Alignment Select
 		$items[] = array(
-			'name' => 'ip_spinner',
-			'label' => 'Input Spinner',
-			'ui' => 'spinner',
-			'param' => array( 'ip_spinner', 'value', 'placeholder', -10, 100, 2 ),
-			'help' => 'Desc',
-		);
-		// Textarea
-		$items[] = array(
-			'name' => 'ip_textarea',
-			'label' => 'Input Textarea',
-			'ui' => 'textarea',
-			'param' => array( 'ip_textarea', '<p>HTML</p>', 'placeholder', 10 ),
+			'name' => 'alignment_select',
+			'label' => 'Alignment Select',
+			'ui' => 'alignment_select',
+			'param' => array( 'alignment_select', 'right' ),
 			'help' => 'Desc',
 		);
 

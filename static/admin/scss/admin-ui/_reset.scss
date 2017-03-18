@@ -85,6 +85,14 @@
 	.ipt_uif_ui_hidden_init {
 		visibility: hidden;
 	}
+
+	// == Core Rewrite
+	input[type=radio],
+	input[type=checkbox] {
+		&:checked:before {
+			display: none;
+		}
+	}
 }
 
 

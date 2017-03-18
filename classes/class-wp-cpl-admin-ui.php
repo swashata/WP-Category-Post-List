@@ -523,42 +523,118 @@ class WP_CPL_Admin_UI {
 	/**
 	 * Layout Selector
 	 *
-	 * @param      string  $name      HTML Name
-	 * @param      string  $selected  Selected item
+	 * @param      string   $name         HTML Name
+	 * @param      string   $selected     Selected item
+	 * @param      array    $additionals  Additional layout elements, must come
+	 *                                    with URL to images as <span
+	 *                                    title="{$title}"><img src="{$url}"
+	 *                                    /></span>
+	 * @param      boolean  $no_defaults  Whether to include default set of
+	 *                                    layouts
 	 */
-	public function layout_select( $name, $selected ) {
+	public function layout_select( $name, $selected, $additionals = array(), $no_defaults = false ) {
 		$id = $this->generate_id_from_name( $name );
-?>
-<div class="ipt_uif_radio_layout_wrap">
-<?php for ( $i = 1; $i <= 4; $i++ ) : $layout = (string) $i; ?>
-<input type="radio" class="ipt_uif_radio ipt_uif_radio_layout" name="<?php echo esc_attr( $name ); ?>" id="<?php echo $id . '_' . $i; ?>" value="<?php echo $i; ?>"<?php $this->checked( $layout, $selected ); ?> />
-<label title="<?php echo sprintf( _nx( '%d Column', '%d Columns', $i, 'eform-admin-layout', 'ipt_fsqm' ), $i ); ?>" for="<?php echo $id . '_' . $i; ?>" class="ipt_uif_label_layout ipt_uif_label_layout_<?php echo $i; ?>"><?php echo $i; ?></label>
-<?php endfor; ?>
-<input type="radio" class="ipt_uif_radio ipt_uif_radio_layout" name="<?php echo esc_attr( $name ); ?>" id="<?php echo $id . '_random'; ?>" value="random"<?php $this->checked( 'random', $selected ); ?> />
-<label title="<?php _e( 'Automatic Columns', 'ipt_fsqm' ); ?>" for="<?php echo $id . '_random'; ?>" class="ipt_uif_label_layout ipt_uif_label_layout_random"><?php _e( 'Auto', 'ipt_fsqm' ); ?></label>
-</div>
-		<?php
+		// Layouts
+		$layouts = array();
+		// Add the basic ones
+		if ( ! $no_defaults ) {
+			// 1-4 column layouts
+			for( $i = 1; $i <= 4; $i++ ) {
+				$layouts[] = array(
+					'value' => (string) $i,
+					'label' => '<span title="' . sprintf( _nx( '%d Column', '%d Columns', $i, 'ui-admin-layout', 'wp-cpl' ), $i ) . '"><img src="' . $this->static_location . 'images/layout-' . $i . '.png" /></span>',
+				);
+			}
+			// Automatic columns
+			$layouts[] = array(
+				'value' => 'random',
+				'label' => '<span title="' . __( 'Automatic Columns', 'wp-cpl' ) . '"><img src="' . $this->static_location . 'images/layout-random.png" /></span>',
+			);
+		}
+		// Merge additionals
+		if ( ! empty( $additionals ) ) {
+			$layouts = array_merge( $layouts, $additionals );
+		}
+
+		// Print our radio
+		echo '<div class="ipt_uif_radio_layout_wrap ipt_uif_rc_image_wrap">';
+		$this->radios( $name, $layouts, $selected );
+		echo '</div>';
+	}
+
+	/**
+	 * Position Selector
+	 *
+	 * @param      string   $name         HTML Name
+	 * @param      string   $selected     Selected item
+	 * @param      array    $additionals  Additional position elements, must come
+	 *                                    with URL to images as <span
+	 *                                    title="{$title}"><img src="{$url}"
+	 *                                    /></span>
+	 * @param      boolean  $no_defaults  Whether to include default set of
+	 *                                    layouts
+	 */
+	public function position_select( $name, $selected, $additionals = array(), $no_defaults = false ) {
+		$id = $this->generate_id_from_name( $name );
+		/* TODO Create Position Images: @link http://www.freepik.com/free-vector/4-icons-web_1052385.htm?utm_source=piktab&utm_medium=extension&utm_campaign=freepik-web */
+		$positions = array();
+		if ( ! $no_defaults ) {
+			// Left
+			$positions[] = array(
+				'value' => 'left',
+				'label' => '<span title="' . __( 'Left', 'wp-cpl' ) . '"><img src="' . $this->static_location . 'images/position-left.png" /></span>',
+			);
+			// Top
+			$positions[] = array(
+				'value' => 'top',
+				'label' => '<span title="' . __( 'Top', 'wp-cpl' ) . '"><img src="' . $this->static_location . 'images/position-top.png" /></span>',
+			);
+			// Right
+			$positions[] = array(
+				'value' => 'right',
+				'label' => '<span title="' . __( 'Right', 'wp-cpl' ) . '"><img src="' . $this->static_location . 'images/position-right.png" /></span>',
+			);
+			// Bottom
+			$positions[] = array(
+				'value' => 'bottom',
+				'label' => '<span title="' . __( 'Bottom', 'wp-cpl' ) . '"><img src="' . $this->static_location . 'images/position-bottom.png" /></span>',
+			);
+		}
+		// Add additionals
+		if ( ! empty( $additionals ) ) {
+			$positions = array_merge( $positions, $additionals );
+		}
+
+		// Print our radio
+		echo '<div class="ipt_uif_radio_position_wrap ipt_uif_rc_image_wrap">';
+		$this->radios( $name, $positions, $selected );
+		echo '</div>';
 	}
 
 	/**
 	 * Alignment Selector
 	 *
-	 * @param      string  $name     HTML Name
-	 * @param      string  $checked  The checked one
+	 * @param      string  $name      HTML Name
+	 * @param      string  $selected  Selected one
 	 */
-	public function alignment_radio( $name, $checked ) {
+	public function alignment_select( $name, $selected ) {
 		$items = array(
-			'left', 'center', 'right', 'justify',
+			'left' => __( 'Align Left', 'wp-cpl' ),
+			'center' => __( 'Align Center', 'wp-cpl' ),
+			'right' => __( 'Align Right', 'wp-cpl' ),
+			'justify' => __( 'Align Justify', 'wp-cpl' ),
 		);
-?>
-<div class="ipt_uif_radio_align_wrap">
-<?php foreach ( $items as $item ) : ?>
-<?php $id = $this->generate_id_from_name( $name ) . '_' . $item; ?>
-<input type="radio" class="ipt_uif_radio ipt_uif_radio_align" name="<?php echo $name; ?>" id="<?php echo $id; ?>" value="<?php echo $item; ?>"<?php $this->checked( $item, $checked ); ?> />
-<label for="<?php echo $id; ?>" class="ipt_uif_label_align_<?php echo $item; ?>"><?php echo ucfirst( $item ); ?></label>
-<?php endforeach; ?>
-</div>
-		<?php
+		$alignments = array();
+		foreach ( $items as $key => $val ) {
+			$alignments[] = array(
+				'value' => $key,
+				'label' => '<span title="' . $val . '"><img src="' . $this->static_location . 'images/alignment-' . $key . '.png" /></span>'
+			);
+		}
+		// Print our radio
+		echo '<div class="ipt_uif_radio_alignment_wrap ipt_uif_rc_image_wrap">';
+		$this->radios( $name, $alignments, $selected );
+		echo '</div>';
 	}
 
 	/**
