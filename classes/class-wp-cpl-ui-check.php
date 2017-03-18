@@ -323,6 +323,13 @@ class WP_CPL_UI_Check extends WP_CPL_Admin {
 				<label>Conditional Select Output</label>
 			</td>
 		</tr>
+		<tr>
+			<th><?php $this->ui->generate_label( 'select', 'Conditional Select Element' ); ?></th>
+			<td>
+				<?php $this->ui->select( 'select', $select_items, array( '1', '4' ), false, true ); ?>
+			</td>
+			<td><?php $this->ui->help( 'Desc' ); ?></td>
+		</tr>
 	</tbody>
 </table>
 		<?php
