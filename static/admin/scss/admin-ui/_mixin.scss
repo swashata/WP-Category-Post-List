@@ -12,6 +12,16 @@
 	}
 }
 
+// == Clear after
+@mixin clear-after() {
+	&::after {
+		display: block;
+		content: "";
+		zoom: 1;
+		clear: both;
+	}
+}
+
 // == Transition
 @mixin material__smooth-tran( $time: 200ms, $prop: all, $easing: ease-in-out ) {
 	transition: $prop $time $easing;

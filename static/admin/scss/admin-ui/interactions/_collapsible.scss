@@ -7,6 +7,8 @@
 		margin-bottom: 14px;
 		@include material__box-shadow-subtle();
 		background-color: $preset-bg;
+		@include clear-after();
+		padding: 0;
 		// Head
 		.ipt_uif_box {
 			background-color: $styled-container-bg;
@@ -18,8 +20,9 @@
 				color: $secondary-text-color;
 				font-weight: 300;
 				border-bottom: 1px solid $divider-color;
-				font-size: 1em;
+				font-size: ( 16 / 14 ) * 1em;
 				padding: 0;
+				text-transform: uppercase;
 
 				a {
 					will-change: color;
@@ -48,8 +51,7 @@
 						font-size: ( 16 / 14 ) * 1em;
 						position: relative;
 						vertical-align: baseline;
-						bottom: ( 2 / 14 ) * -1em;
-
+						transform-style: preserve-3d;
 						will-change: transform;
 						@include material__smooth-tran( 500ms, transform );
 					}
@@ -63,7 +65,7 @@
 						}
 
 						.collapsible_state {
-							transform: rotate( -180deg );
+							transform: rotate3d(1, 0, 0, 180deg);
 						}
 					}
 				}

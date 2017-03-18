@@ -4,6 +4,14 @@
 .#{$selector} {
 	.ipt_uif_shadow {
 		@include material__box-shadow-subtle();
+		@include clear-after();
+		padding: 15px;
+		&.shadow-heavy {
+			@include material__box-shadow();
+		}
+		&.shadow-bottom {
+			@include material__box-shadow-bottom();
+		}
 	}
 
 	.ui-widget,
@@ -13,6 +21,13 @@
 			box-shadow: none;
 			border: 1px solid $divider-color;
 			margin-bottom: -1px;
+
+			&.shadow-heavy {
+				@include material__box-shadow();
+			}
+			&.shadow-bottom {
+				@include material__box-shadow-bottom();
+			}
 		}
 
 		.ipt_uif_box {

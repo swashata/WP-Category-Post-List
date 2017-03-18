@@ -101,8 +101,20 @@ class WP_CPL_UI_Check extends WP_CPL_Admin {
 			'scroll' => false,
 			'has_inner_tab' => false,
 		);
+		$tabs[] = array(
+			'id' => 'wp_cpl_container_ui',
+			'label' => 'Container UI',
+			'callback' => array( array( $this, 'container_ui' ), array() ),
+			'scroll' => false,
+			'has_inner_tab' => false,
+		);
 
 		$this->ui->tabs( $tabs, false, true );
+	}
+
+	public function container_ui() {
+		$this->ui->iconbox( 'Iconbox', array( array( $this, 'insider' ), array( 'cui' ) ), 'tags2' );
+		$this->ui->shadowbox( array( array( $this, 'insider' ), array( 'sui' ) ) );
 	}
 
 	public function helper_ui() {
@@ -284,9 +296,48 @@ class WP_CPL_UI_Check extends WP_CPL_Admin {
 		$this->ui->msg_update( __( 'This is an Update message', 'wp-cpl' ) );
 		$this->ui->msg_error( __( 'This is an ERROR message', 'wp-cpl' ) );
 		$this->ui->clear();
+
+		// Help
 		$this->ui->help( __( 'I am useful', 'wp-cpl' ), __( 'Align Left', 'wp-cpl' ), 'left' );
 		$this->ui->help( __( 'I am useful', 'wp-cpl' ), __( 'Align Right', 'wp-cpl' ), 'right' );
 		$this->ui->help( __( 'I am useful', 'wp-cpl' ), __( 'Align Inline', 'wp-cpl' ), 'inline' );
+		$this->ui->clear();
+
+		// Collapsibles
+		$this->ui->collapsible( 'Sample Collapsible', array( array( $this, 'insider' ), array() ) );
+	}
+
+	public function insider( $prefix = 'cl' ) {
+		$this->ui->msg_okay( __( 'This is an OKAY message', 'wp-cpl' ) );
+		$this->ui->msg_update( __( 'This is an Update message', 'wp-cpl' ) );
+		$this->ui->msg_error( __( 'This is an ERROR message', 'wp-cpl' ) );
+		$this->ui->clear();
+		// Password
+		$items[] = array(
+			'name' => $prefix . '_ip_pass',
+			'label' => 'Input Password',
+			'ui' => 'password',
+			'param' => array( $prefix . '_ip_pass', 'value', 'placeholder' ),
+			'help' => 'Desc',
+		);
+		// Spinner
+		$items[] = array(
+			'name' => $prefix . '_ip_spinner',
+			'label' => 'Input Spinner',
+			'ui' => 'spinner',
+			'param' => array( $prefix . '_ip_spinner', '50', 'placeholder', -10, 100, 2 ),
+			'help' => 'Desc',
+		);
+		// Textarea
+		$items[] = array(
+			'name' => $prefix . '_ip_textarea',
+			'label' => 'Input Textarea',
+			'ui' => 'textarea',
+			'param' => array( $prefix . '_ip_textarea', '<p>HTML</p>', 'placeholder', 10 ),
+			'help' => 'Desc',
+		);
+
+		$this->ui->form_table( $items );
 	}
 
 	public function jquery_ui() {

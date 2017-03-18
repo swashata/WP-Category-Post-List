@@ -1403,21 +1403,20 @@ class WP_CPL_Admin_UI {
 	}
 
 	public function collapsible( $label, $callback, $open = false ) {
-?>
-<div class="ipt_uif_shadow glowy ipt_uif_collapsible" data-opened="<?php echo $open; ?>">
-	<div class="ipt_uif_box cyan">
-		<h3><a class="ipt_uif_collapsible_handle_anchor" href="javascript:;"><span class="ipt-icomoon-file3 heading_icon"></span><span class="ipt-icomoon-arrow-down2 collapsible_state"></span><?php echo $label; ?></a></h3>
-	</div>
-	<?php $this->div( 'ipt_uif_collapsed', $callback ); ?>
-</div>
-		<?php
+		$this->collapsible_head( $label, $open );
+		if ( ! $this->check_callback( $callback ) ) {
+			$this->msg_error( __( 'Invalid callback', 'wp-cpl' ) );
+		} else {
+			call_user_func_array( $callback[0], $callback[1] );
+		}
+		$this->collapsible_tail();
 	}
 
 	public function collapsible_head( $label, $open = false ) {
 ?>
-<div class="ipt_uif_shadow glowy ipt_uif_collapsible" data-opened="<?php echo $open; ?>">
-	<div class="ipt_uif_box cyan">
-		<h3><a class="ipt_uif_collapsible_handle_anchor" href="javascript:;"><span class="ipt-icomoon-file3 heading_icon"></span><span class="ipt-icomoon-arrow-down2 collapsible_state"></span><?php echo $label; ?></a></h3>
+<div class="ipt_uif_shadow ipt_uif_collapsible" data-opened="<?php echo $open; ?>">
+	<div class="ipt_uif_box">
+		<h3><a class="ipt_uif_collapsible_handle_anchor" href="javascript:;"><span class="ipt-icomoon-arrow-down3 collapsible_state"></span><span class="ipt-icomoon-folder-open2 heading_icon"></span> <?php echo $label; ?></a></h3>
 	</div>
 	<div class="ipt_uif_collapsed">
 		<?php
@@ -1434,63 +1433,132 @@ class WP_CPL_Admin_UI {
 	/**
 	 * Create a box container nested inside a shadow container.
 	 *
-	 * @param array   $styles  Array of shadow style and box style.
-	 * @param mixed   (array|string) $callback The callback function to populate.
-	 * @param int     $scroll  The scroll height value in pixels. 0 if no scroll. Default is 400.
-	 * @param string  $id      HTML ID
-	 * @param array   $classes HTML classes
+	 * @param      array   $callback  The callback function to populate.
+	 * @param      array   $style     Array of shadow style and box style.
+	 * @param      int     $scroll    The scroll height value in pixels. 0 if no
+	 *                                scroll. Default is 400.
+	 * @param      string  $id        HTML ID
+	 * @param      array   $classes   HTML classes
 	 */
-	public function shadowbox( $styles, $callback, $scroll = 0, $id = '', $classes = array() ) {
-		if ( !is_array( $styles ) ) {
-			$styles = array( 'lifted_corner', 'cyan' );
-		}
-		$styles[0] = array_merge( (array) $styles[0], array( 'ipt_uif_shadow' ) );
-		$styles[1] = array_merge( (array) $styles[1], array( 'ipt_uif_box' ) );
-		$this->div( $styles, $callback, $scroll, $id, $classes );
+	public function shadowbox( $callback, $style = 'normal', $scroll = 0, $id = '', $classes = array() ) {
+		$class = 'ipt_uif_shadow shadow-' . $style;
+		$this->div( $class, $callback, $scroll, $id, $classes );
 	}
 
 	/**
 	 * Creates a nice looking container with an icon on top
 	 *
-	 * @param string  $label   The heading
-	 * @param mixed   (array|string) $callback The callback function to populate.
-	 * @param string  $icon    The icon. Consult the /static/fonts/fonts.css to pass class name
-	 * @param int     $scroll  The scroll height value in pixels. 0 if no scroll. Default is 400.
-	 * @param string  $id      HTML ID
-	 * @param array   $classes HTML classes
-	 * @return type
+	 * @param      string  $label        The heading
+	 * @param      array  $callback     The callback function to populate
+	 * @param      string  $icon         The icon. Consult the
+	 *                                   /static/fonts/fonts.css to pass class
+	 *                                   name
+	 * @param      int     $scroll       The scroll height value in pixels. 0 if
+	 *                                   no scroll. Default is 400.
+	 * @param      string  $id           HTML ID
+	 * @param      string  $head_button  The head button
+	 * @param      array   $classes      HTML classes
 	 */
-	public function iconbox( $label, $callback, $icon = 'info2', $scroll = 0, $id = '', $classes = array() ) {
-		if ( !$this->check_callback( $callback ) ) {
-			$this->msg_error( 'Invalid Callback supplied' );
+	public function iconbox( $label, $callback, $icon = 'info2', $scroll = 0, $id = '', $head_button = '', $classes = array() ) {
+		if ( ! $this->check_callback( $callback ) ) {
+			$this->msg_error( __( 'Invalid Callback supplied', 'wp-cpl' ) );
 			return;
 		}
-?>
-<div class="ipt_uif_iconbox">
-	<div class="ipt_uif_box cyan">
-		<h3><span class="ipt-icomoon-<?php echo esc_attr( $icon ); ?>"></span><?php echo $label; ?></h3>
-	</div>
-	<?php $this->div( 'ipt_uif_iconbox_inner', $callback, $scroll, $id, $classes ); ?>
-</div>
-		<?php
+
+		$this->iconbox_head( $label, $icon, $scroll, $id, $head_button, $classes );
+		call_user_func_array( $callback[0], $callback[1] );
+		$this->iconbox_tail();
 	}
 
-	public function iconbox_head( $label, $icon, $after = '' ) {
-		if ( '' != $after ) {
-			$after = '<div class="ipt_uif_float_right">' . $after . '</div>';
+	public function iconbox_head( $label, $icon = 'info2', $scroll = 0, $id = '', $head_button = '', $classes = array() ) {
+		if ( '' != $head_button ) {
+			$head_button = '<div class="ipt_uif_float_right">' . $head_button . '</div>';
+		}
+		$id_attr = '';
+		if ( '' != $id ) {
+			$id_attr = ' id="' . esc_attr( $id ) . '"';
+		}
+		if ( ! is_array( $classes ) ) {
+			$classes = (array) $classes;
+		}
+		$classes[] = 'ipt_uif_iconbox';
+		$inner_classes = array( 'ipt_uif_iconbox_inner' );
+		$scroll = (int) $scroll;
+		$scroll_style = '';
+		if ( $scroll > 0 ) {
+			$scroll_style = 'max-height: ' . $scroll . 'px; overflow-y: auto;';
+			$inner_classes[] = 'ipt_uif_scroll';
 		}
 ?>
-<div class="ipt_uif_iconbox">
-	<div class="ipt_uif_box cyan ipt_uif_container_head">
-		<?php echo $after; ?><h3><span class="ipt-icomoon-<?php echo esc_attr( $icon ); ?>"></span><?php echo $label; ?></h3>
+<div class="<?php echo implode( ' ', $classes ); ?>"<?php echo $id_attr; ?>>
+	<div class="ipt_uif_box ipt_uif_container_head">
+		<?php echo $head_button; ?><h3><span class="ipt-icomoon-<?php echo esc_attr( $icon ); ?>"></span><?php echo $label; ?></h3>
 	</div>
-	<div class="ipt_uif_iconbox_inner">
+	<div class="<?php echo implode( ' ', $inner_classes ); ?>" style="<?php echo $scroll_style; ?>">
 		<?php
 	}
 
 	public function iconbox_tail() {
 ?>
 	</div>
+</div>
+		<?php
+	}
+
+	/**
+	 * Creates a div
+	 *
+	 * Optionally with nested divs inside
+	 *
+	 * @param      array   $styles    $styles The HTML style. Can be a single
+	 *                                string when only one div will be produced,
+	 *                                or array in which case the 0th style will
+	 *                                be used to create the main div and other
+	 *                                styles will be nested inside as individual
+	 *                                divs.
+	 * @param      array   $callback  The callback function to populate.
+	 * @param      int     $scroll    The scroll height value in pixels. 0 if no
+	 *                                scroll.
+	 * @param      string  $id        HTML ID
+	 * @param      array   $classes   HTML classes
+	 */
+	public function div( $styles, $callback, $scroll = 0, $id = '', $classes = array() ) {
+		if ( ! $this->check_callback( $callback ) ) {
+			$this->msg_error( __( 'Invalid Callback supplied', 'wp-cpl' ) );
+			return;
+		}
+		if ( ! is_array( $classes ) ) {
+			$classes = (array) $classes;
+		}
+
+		if ( is_array( $styles ) && count( $styles ) > 1 ) {
+			$classes = array_merge( $classes, (array) $styles[0] );
+		} else {
+			$classes[] = (string) $styles;
+		}
+		$style_attr = '';
+		$scroll = (int) $scroll;
+		if ( $scroll > 0 ) {
+			$style_attr = ' style="max-height: ' . $scroll . 'px; overflow: auto;"';
+			$classes[] = 'ipt_uif_scroll';
+		}
+		$id_attr = '';
+		if ( trim( $id ) != '' ) {
+			$id_attr = ' id="' . esc_attr( trim( $id ) ) . '"';
+		}
+?>
+<div class="<?php echo implode( ' ', $classes ); ?>"<?php echo $id_attr . $style_attr; ?>>
+	<?php if ( is_array( $styles ) && count( $styles ) > 1 ) : ?>
+		<?php for ( $i = 1; $i < count( $styles ); $i++ ) : ?>
+			<div class="<?php echo implode( ' ', (array) $styles[$i] ); ?>">
+		<?php endfor; ?>
+	<?php endif; ?>
+				<?php call_user_func_array( $callback[0], $callback[1] ); ?>
+	<?php if ( is_array( $styles ) && count( $styles ) > 1 ) : ?>
+		<?php for ( $i = 1; $i < count( $styles ); $i++ ) : ?>
+			</div>
+		<?php endfor; ?>
+	<?php endif; ?>
 </div>
 		<?php
 	}
